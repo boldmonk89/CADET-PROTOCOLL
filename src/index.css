@@ -1,76 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* CADET PROTOCOL — Military Glassmorphism Design System
-   All colors HSL. Dark mode is the only mode. */
-
 @layer base {
   :root {
-    /* Core military palette */
-    --background: 220 40% 6%;            /* #0A0E17 deep navy */
-    --foreground: 45 15% 92%;            /* near-white parchment */
+    --background: 140 10% 4%; /* Dark almost black tactical green */
+    --foreground: 0 0% 95%;   
+    
+    /* Strict UI contrast */
+    --card: 140 10% 5%;
+    --card-foreground: 0 0% 95%;
+    
+    --popover: 140 10% 5%;
+    --popover-foreground: 0 0% 95%;
+    
+    /* Primary Gold Highlight */
+    --primary: 43 100% 50%; /* #ffc107 approx bright gold */
+    --primary-foreground: 0 0% 0%;
+    
+    --secondary: 140 5% 15%; /* Muted olive tactical */
+    --secondary-foreground: 0 0% 95%;
+    
+    --muted: 140 5% 15%;
+    --muted-foreground: 140 5% 60%;
+    
+    --accent: 140 10% 20%;
+    --accent-foreground: 0 0% 95%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --card: 215 45% 11%;
-    --card-foreground: 45 15% 92%;
-
-    --popover: 215 45% 9%;
-    --popover-foreground: 45 15% 92%;
-
-    /* Military Gold = primary */
-    --primary: 44 56% 54%;               /* #C9A84C */
-    --primary-foreground: 220 40% 6%;
-    --primary-glow: 44 80% 65%;
-
-    /* Olive = secondary */
-    --secondary: 75 26% 22%;             /* #4B5320 */
-    --secondary-foreground: 45 15% 92%;
-
-    /* Steel = accent */
-    --accent: 213 53% 25%;               /* #1E3A5F */
-    --accent-foreground: 45 15% 92%;
-
-    --muted: 215 30% 14%;
-    --muted-foreground: 45 8% 65%;
-
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 45 15% 92%;
-
-    --warning: 38 92% 55%;               /* amber for borderline */
-    --warning-foreground: 220 40% 6%;
-
-    --success: 130 50% 45%;
-    --success-foreground: 45 15% 92%;
-
-    --border: 44 30% 30%;
-    --input: 215 30% 16%;
-    --ring: 44 56% 54%;
-
-    --radius: 0.25rem;                   /* sharper, military */
-
-    /* Service colours */
-    --service-army: 75 35% 35%;
-    --service-navy: 213 70% 30%;
-    --service-airforce: 200 60% 55%;
-
-    /* Glass surfaces */
-    --glass-bg: 213 53% 25% / 0.4;
-    --glass-border: 44 56% 54% / 0.25;
-
-    /* Gradients */
-    --gradient-tactical: linear-gradient(135deg, hsl(220 50% 8%), hsl(213 53% 18%));
-    --gradient-gold: linear-gradient(135deg, hsl(44 56% 54%), hsl(44 80% 65%));
-    --gradient-radar: radial-gradient(circle at 50% 50%, hsl(44 56% 54% / 0.15), transparent 70%);
-
-    /* Shadows / glows */
-    --glow-gold: 0 0 24px hsl(44 80% 60% / 0.4);
-    --glow-danger: 0 0 24px hsl(0 70% 50% / 0.5);
-    --shadow-tactical: 0 8px 32px hsl(220 60% 2% / 0.6);
-
-    /* Motion */
-    --transition-tactical: cubic-bezier(0.16, 1, 0.3, 1);
+    --border: 140 5% 20%;
+    --input: 140 5% 20%;
+    --ring: 43 100% 50%;
+    
+    --radius: 0; /* SHARP CORNERS MANDATE */
   }
 }
 
@@ -78,115 +42,63 @@
   * {
     @apply border-border;
   }
-
-  html {
-    color-scheme: dark;
-  }
-
   body {
-    @apply bg-background text-foreground antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
-    background-image:
-      radial-gradient(circle at 20% 0%, hsl(213 53% 25% / 0.25), transparent 50%),
-      radial-gradient(circle at 80% 100%, hsl(75 26% 22% / 0.2), transparent 50%);
-    background-attachment: fixed;
-    min-height: 100vh;
+    @apply bg-background text-foreground bg-fixed;
+    background-image: 
+      linear-gradient(to right, rgba(255,255,255,0.01) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.01) 1px, transparent 1px);
+    background-size: 40px 40px;
+    font-family: 'Inter', sans-serif;
   }
-
-  ::selection {
-    background: hsl(var(--primary) / 0.3);
-    color: hsl(var(--foreground));
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight text-white;
   }
 }
 
-@layer components {
+@layer utilities {
   .glass-panel {
-    background: hsl(213 53% 18% / 0.55);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid hsl(var(--primary) / 0.25);
-    box-shadow: var(--shadow-tactical);
+    @apply bg-tactical-100/60 backdrop-blur-md border border-tactical-300 relative overflow-hidden;
   }
-
-  .glass-panel-strong {
-    background: hsl(220 50% 10% / 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--primary) / 0.4);
-    box-shadow: var(--shadow-tactical), inset 0 1px 0 hsl(var(--primary) / 0.15);
-  }
-
-  .font-display {
-    font-family: 'Playfair Display', Georgia, serif;
-  }
-
-  .font-command {
-    font-family: 'Times New Roman', Times, serif;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-  }
-
-  .font-mono-tac {
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    letter-spacing: 0.05em;
-  }
-
-  .grid-tactical {
-    background-image:
-      linear-gradient(hsl(var(--primary) / 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--primary) / 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-
-  .corner-bracket {
-    position: relative;
-  }
-  .corner-bracket::before,
-  .corner-bracket::after {
+  
+  .glass-panel::before {
     content: '';
     position: absolute;
-    width: 14px;
-    height: 14px;
-    border: 2px solid hsl(var(--primary));
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.4), transparent);
   }
-  .corner-bracket::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
-  .corner-bracket::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
 
   .text-glow-gold {
-    text-shadow: 0 0 12px hsl(var(--primary) / 0.6);
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  }
+
+  .text-glow-success {
+    text-shadow: 0 0 15px rgba(0, 255, 157, 0.7);
   }
 
   .scanline {
-    position: relative;
-    overflow: hidden;
-  }
-  .scanline::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 0%, hsl(var(--primary) / 0.15) 50%, transparent 100%);
-    animation: scan 3s linear infinite;
+    position: fixed;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(to bottom, transparent, rgba(0,255,157,0.4), transparent);
+    z-index: 50;
     pointer-events: none;
+    animation: scanline 8s linear infinite;
   }
+}
 
-  @keyframes scan {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
-    50% { box-shadow: 0 0 0 8px hsl(var(--primary) / 0); }
-  }
-
-  .pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
+/* Custom Scrollbar for Tactical Dashboards */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
 }
