@@ -14,16 +14,153 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assessment_results: {
+        Row: {
+          created_at: string
+          examiner_signed_by: string | null
+          id: string
+          measured_value: string | null
+          notes: string | null
+          parameter: string
+          status: string
+          threshold: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          examiner_signed_by?: string | null
+          id?: string
+          measured_value?: string | null
+          notes?: string | null
+          parameter: string
+          status: string
+          threshold?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          examiner_signed_by?: string | null
+          id?: string
+          measured_value?: string | null
+          notes?: string | null
+          parameter?: string
+          status?: string
+          threshold?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      candidate_profiles: {
+        Row: {
+          blood_group: string | null
+          candidate_code: string | null
+          chest_cm: number | null
+          city: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          date_of_birth: string | null
+          entry_scheme: string | null
+          family_history: Json | null
+          full_name: string | null
+          gender: string | null
+          height_cm: number | null
+          id: string
+          intake_completed_at: string | null
+          intake_step: number
+          medical_history: Json | null
+          state: string | null
+          target_service: string | null
+          updated_at: string
+          user_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          blood_group?: string | null
+          candidate_code?: string | null
+          chest_cm?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          entry_scheme?: string | null
+          family_history?: Json | null
+          full_name?: string | null
+          gender?: string | null
+          height_cm?: number | null
+          id?: string
+          intake_completed_at?: string | null
+          intake_step?: number
+          medical_history?: Json | null
+          state?: string | null
+          target_service?: string | null
+          updated_at?: string
+          user_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          blood_group?: string | null
+          candidate_code?: string | null
+          chest_cm?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          entry_scheme?: string | null
+          family_history?: Json | null
+          full_name?: string | null
+          gender?: string | null
+          height_cm?: number | null
+          id?: string
+          intake_completed_at?: string | null
+          intake_step?: number
+          medical_history?: Json | null
+          state?: string | null
+          target_service?: string | null
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "candidate" | "examiner" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +287,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["candidate", "examiner", "admin"],
+    },
   },
 } as const
