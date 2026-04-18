@@ -32,9 +32,6 @@ export default function Hospitals() {
     })();
   }, [user]);
 
-  if (loading) return null;
-  if (!user) { navigate("/auth"); return null; }
-
   const candidateCity = overrideCity || profile?.city || "";
   const coords = getCityCoords(candidateCity);
 
@@ -47,6 +44,9 @@ export default function Hospitals() {
         return a.distance - b.distance;
       });
   }, [coords]);
+
+  if (loading) return null;
+  if (!user) { navigate("/auth"); return null; }
 
   const triggered = results.length > 0;
 
