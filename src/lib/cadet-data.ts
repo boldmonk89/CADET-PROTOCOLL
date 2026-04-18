@@ -1,0 +1,141 @@
+// CADET PROTOCOL — Static reference data
+
+export const ENTRY_SCHEMES = ["NDA", "CDS"] as const;
+export const TARGET_SERVICES = ["ARMY", "NAVY", "AIR_FORCE"] as const;
+export const GENDERS = ["Male", "Female", "Other"] as const;
+export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
+
+export type EntryScheme = typeof ENTRY_SCHEMES[number];
+export type TargetService = typeof TARGET_SERVICES[number];
+
+// AFMS thresholds (simplified from PDF Module B)
+export interface StandardRow {
+  parameter: string;
+  unit: string;
+  thresholds: Record<string, string>;
+  rejectTrigger: string;
+}
+
+export const AFMS_STANDARDS: StandardRow[] = [
+  {
+    parameter: "Height",
+    unit: "cm",
+    thresholds: {
+      "NDA-ARMY": "157.5", "NDA-NAVY": "157", "NDA-AIR_FORCE": "162.5",
+      "CDS-ARMY": "157.5", "CDS-NAVY": "157", "CDS-AIR_FORCE": "162.5",
+    },
+    rejectTrigger: "Below minimum height",
+  },
+  {
+    parameter: "Weight",
+    unit: "kg",
+    thresholds: {
+      "NDA-ARMY": "Per BMI", "NDA-NAVY": "Per BMI", "NDA-AIR_FORCE": "Per BMI",
+      "CDS-ARMY": "Per BMI", "CDS-NAVY": "Per BMI", "CDS-AIR_FORCE": "Per BMI",
+    },
+    rejectTrigger: "BMI < 18.5 or > 25",
+  },
+  {
+    parameter: "Chest Expansion",
+    unit: "cm",
+    thresholds: {
+      "NDA-ARMY": "5", "NDA-NAVY": "5", "NDA-AIR_FORCE": "5",
+      "CDS-ARMY": "5", "CDS-NAVY": "5", "CDS-AIR_FORCE": "5",
+    },
+    rejectTrigger: "Less than 5 cm",
+  },
+  {
+    parameter: "Vision (better eye, uncorrected)",
+    unit: "",
+    thresholds: {
+      "NDA-ARMY": "6/6", "NDA-NAVY": "6/6", "NDA-AIR_FORCE": "6/6 strict",
+      "CDS-ARMY": "6/6 corrected", "CDS-NAVY": "6/6", "CDS-AIR_FORCE": "6/6 strict",
+    },
+    rejectTrigger: "Below required acuity",
+  },
+  {
+    parameter: "Colour Vision",
+    unit: "",
+    thresholds: {
+      "NDA-ARMY": "CP-III", "NDA-NAVY": "CP-II", "NDA-AIR_FORCE": "CP-I",
+      "CDS-ARMY": "CP-III", "CDS-NAVY": "CP-II", "CDS-AIR_FORCE": "CP-I",
+    },
+    rejectTrigger: "Below required colour perception class",
+  },
+  {
+    parameter: "Hearing",
+    unit: "",
+    thresholds: {
+      "NDA-ARMY": "Whisper @ 610cm", "NDA-NAVY": "Whisper @ 610cm", "NDA-AIR_FORCE": "Audiometric",
+      "CDS-ARMY": "Whisper @ 610cm", "CDS-NAVY": "Whisper @ 610cm", "CDS-AIR_FORCE": "Audiometric",
+    },
+    rejectTrigger: "Hearing loss > 20 dB",
+  },
+];
+
+// Command Hospitals (representative — PDF Module D)
+export interface CommandHospital {
+  name: string;
+  city: string;
+  state: string;
+  service: "ARMY" | "NAVY" | "AIR_FORCE";
+  phone?: string;
+  specialities: string[];
+  // Approximate coords for distance calc
+  lat: number;
+  lng: number;
+}
+
+export const COMMAND_HOSPITALS: CommandHospital[] = [
+  { name: "Command Hospital (Northern Command)", city: "Udhampur", state: "J&K", service: "ARMY", phone: "+91-1992-242000", specialities: ["Orthopaedics", "General Medicine"], lat: 32.9159, lng: 75.1416 },
+  { name: "Command Hospital (Western Command)", city: "Chandigarh", state: "Chandigarh", service: "ARMY", phone: "+91-172-2740545", specialities: ["Orthopaedics", "Cardiology", "Vision"], lat: 30.7333, lng: 76.7794 },
+  { name: "Command Hospital (Central Command)", city: "Lucknow", state: "UP", service: "ARMY", phone: "+91-522-2483120", specialities: ["Cardiology", "Orthopaedics", "ENT"], lat: 26.8467, lng: 80.9462 },
+  { name: "Command Hospital (Eastern Command)", city: "Kolkata", state: "WB", service: "ARMY", phone: "+91-33-25690000", specialities: ["General Medicine", "Orthopaedics"], lat: 22.5726, lng: 88.3639 },
+  { name: "Command Hospital (Southern Command)", city: "Pune", state: "MH", service: "ARMY", phone: "+91-20-26306000", specialities: ["Orthopaedics", "Cardiology", "Vision"], lat: 18.5204, lng: 73.8567 },
+  { name: "Command Hospital Air Force", city: "Bangalore", state: "KA", service: "AIR_FORCE", phone: "+91-80-25224436", specialities: ["Aviation Medicine", "Vision", "ENT"], lat: 12.9716, lng: 77.5946 },
+  { name: "INHS Asvini", city: "Mumbai", state: "MH", service: "NAVY", phone: "+91-22-22151031", specialities: ["Maritime Medicine", "Cardiology"], lat: 19.0760, lng: 72.8777 },
+  { name: "INHS Kalyani", city: "Visakhapatnam", state: "AP", service: "NAVY", phone: "+91-891-2812345", specialities: ["Maritime Medicine", "ENT"], lat: 17.6868, lng: 83.2185 },
+  { name: "Army Hospital (Research & Referral)", city: "New Delhi", state: "Delhi", service: "ARMY", phone: "+91-11-23093020", specialities: ["All specialities", "Tertiary care"], lat: 28.6139, lng: 77.2090 },
+];
+
+// Approximate city coordinates for distance calculation (city-level, not GPS)
+export const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  delhi: { lat: 28.6139, lng: 77.2090 },
+  mumbai: { lat: 19.0760, lng: 72.8777 },
+  bangalore: { lat: 12.9716, lng: 77.5946 },
+  bengaluru: { lat: 12.9716, lng: 77.5946 },
+  chennai: { lat: 13.0827, lng: 80.2707 },
+  kolkata: { lat: 22.5726, lng: 88.3639 },
+  hyderabad: { lat: 17.3850, lng: 78.4867 },
+  pune: { lat: 18.5204, lng: 73.8567 },
+  patna: { lat: 25.5941, lng: 85.1376 },
+  jaipur: { lat: 26.9124, lng: 75.7873 },
+  lucknow: { lat: 26.8467, lng: 80.9462 },
+  ahmedabad: { lat: 23.0225, lng: 72.5714 },
+  chandigarh: { lat: 30.7333, lng: 76.7794 },
+  bhopal: { lat: 23.2599, lng: 77.4126 },
+  guwahati: { lat: 26.1445, lng: 91.7362 },
+  kochi: { lat: 9.9312, lng: 76.2673 },
+  visakhapatnam: { lat: 17.6868, lng: 83.2185 },
+};
+
+export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const lat1 = (a.lat * Math.PI) / 180;
+  const lat2 = (b.lat * Math.PI) / 180;
+  const x = Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  return Math.round(2 * R * Math.asin(Math.sqrt(x)));
+}
+
+export function getCityCoords(city?: string | null): { lat: number; lng: number } | null {
+  if (!city) return null;
+  return CITY_COORDS[city.toLowerCase().trim()] ?? null;
+}
+
+export function bmi(heightCm?: number | null, weightKg?: number | null): number | null {
+  if (!heightCm || !weightKg) return null;
+  const m = heightCm / 100;
+  return Math.round((weightKg / (m * m)) * 10) / 10;
+}

@@ -1,96 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* CADET PROTOCOL — Military Glassmorphism Design System
+   All colors HSL. Dark mode is the only mode. */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core military palette */
+    --background: 220 40% 6%;            /* #0A0E17 deep navy */
+    --foreground: 45 15% 92%;            /* near-white parchment */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 215 45% 11%;
+    --card-foreground: 45 15% 92%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 215 45% 9%;
+    --popover-foreground: 45 15% 92%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Military Gold = primary */
+    --primary: 44 56% 54%;               /* #C9A84C */
+    --primary-foreground: 220 40% 6%;
+    --primary-glow: 44 80% 65%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Olive = secondary */
+    --secondary: 75 26% 22%;             /* #4B5320 */
+    --secondary-foreground: 45 15% 92%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Steel = accent */
+    --accent: 213 53% 25%;               /* #1E3A5F */
+    --accent-foreground: 45 15% 92%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --muted: 215 30% 14%;
+    --muted-foreground: 45 8% 65%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 45 15% 92%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --warning: 38 92% 55%;               /* amber for borderline */
+    --warning-foreground: 220 40% 6%;
 
-    --radius: 0.5rem;
+    --success: 130 50% 45%;
+    --success-foreground: 45 15% 92%;
 
-    --sidebar-background: 0 0% 98%;
+    --border: 44 30% 30%;
+    --input: 215 30% 16%;
+    --ring: 44 56% 54%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --radius: 0.25rem;                   /* sharper, military */
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Service colours */
+    --service-army: 75 35% 35%;
+    --service-navy: 213 70% 30%;
+    --service-airforce: 200 60% 55%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Glass surfaces */
+    --glass-bg: 213 53% 25% / 0.4;
+    --glass-border: 44 56% 54% / 0.25;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Gradients */
+    --gradient-tactical: linear-gradient(135deg, hsl(220 50% 8%), hsl(213 53% 18%));
+    --gradient-gold: linear-gradient(135deg, hsl(44 56% 54%), hsl(44 80% 65%));
+    --gradient-radar: radial-gradient(circle at 50% 50%, hsl(44 56% 54% / 0.15), transparent 70%);
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    /* Shadows / glows */
+    --glow-gold: 0 0 24px hsl(44 80% 60% / 0.4);
+    --glow-danger: 0 0 24px hsl(0 70% 50% / 0.5);
+    --shadow-tactical: 0 8px 32px hsl(220 60% 2% / 0.6);
 
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Motion */
+    --transition-tactical: cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
@@ -99,7 +79,114 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    color-scheme: dark;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at 20% 0%, hsl(213 53% 25% / 0.25), transparent 50%),
+      radial-gradient(circle at 80% 100%, hsl(75 26% 22% / 0.2), transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  .glass-panel {
+    background: hsl(213 53% 18% / 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--primary) / 0.25);
+    box-shadow: var(--shadow-tactical);
+  }
+
+  .glass-panel-strong {
+    background: hsl(220 50% 10% / 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--primary) / 0.4);
+    box-shadow: var(--shadow-tactical), inset 0 1px 0 hsl(var(--primary) / 0.15);
+  }
+
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .font-command {
+    font-family: 'Times New Roman', Times, serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .font-mono-tac {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .grid-tactical {
+    background-image:
+      linear-gradient(hsl(var(--primary) / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .corner-bracket {
+    position: relative;
+  }
+  .corner-bracket::before,
+  .corner-bracket::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 2px solid hsl(var(--primary));
+  }
+  .corner-bracket::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
+  .corner-bracket::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
+
+  .text-glow-gold {
+    text-shadow: 0 0 12px hsl(var(--primary) / 0.6);
+  }
+
+  .scanline {
+    position: relative;
+    overflow: hidden;
+  }
+  .scanline::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0%, hsl(var(--primary) / 0.15) 50%, transparent 100%);
+    animation: scan 3s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+    50% { box-shadow: 0 0 0 8px hsl(var(--primary) / 0); }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
