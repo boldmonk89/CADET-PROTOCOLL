@@ -2,50 +2,43 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Logo } from "@/components/cadet/Logo";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { Shield, Activity, FileCheck, MapPin, ArrowRight } from "lucide-react";
 
 export default function Landing() {
+  const { user } = useAuth();
   const { scrollYProgress } = useScroll();
-  const logoScale = useTransform(scrollYProgress, [0, 0.4], [1.8, 0.9]);
-  const logoOpacity = useTransform(scrollYProgress, [0, 0.4, 1], [0, 0.25, 0.12]);
-  const logoBlur = useTransform(scrollYProgress, [0, 0.2, 0.4], ["blur(30px)", "blur(0px)", "blur(2px)"]);
+  const logoScale = useTransform(scrollYProgress, [0, 0.5], [1.5, 1]);
+  const logoOpacity = useTransform(scrollYProgress, [0, 0.4, 1], [0, 0.35, 0.2]);
+  const logoBlur = useTransform(scrollYProgress, [0, 0.3], ["blur(40px)", "blur(0px)"]);
   const textY = useTransform(scrollYProgress, [0, 0.3], [0, -40]);
-  const logoY = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const logoY = useTransform(scrollYProgress, [0, 1], [0, 300]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden selection:bg-primary/30">
       {/* Premium Background Effects */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
       
-      {/* 3D Holographic Scroll-Reveal Symbol */}
+      {/* Cinematic Reveal Background Symbol */}
       <motion.div 
         style={{ 
           scale: logoScale, 
           opacity: logoOpacity,
           filter: logoBlur,
           y: logoY,
-          perspective: 2000,
         }}
         className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"
       >
-        <motion.div
-           style={{
-             rotateY: useTransform(scrollYProgress, [0, 0.4], [0, 65]),
-             rotateX: useTransform(scrollYProgress, [0, 0.4], [0, -25]),
-             transformStyle: "preserve-3d",
-           }}
-           className="relative flex items-center justify-center"
-        >
+        <motion.div className="relative flex items-center justify-center">
           <motion.img 
              src="/assets/caduceus_clean.png"
              alt=""
-             className="w-[80%] max-w-[800px] h-auto object-contain drop-shadow-[0_0_100px_rgba(212,175,55,0.35)] mix-blend-screen"
+             className="w-[85%] max-w-[900px] h-auto object-contain drop-shadow-[0_0_100px_rgba(212,175,55,0.25)] mix-blend-multiply contrast-125 brightness-110"
              style={{ translateZ: 0 }}
           />
-          {/* Intense Depth Rings */}
+          {/* Subtle Glow Ring */}
           <motion.div 
-            style={{ translateZ: -200, opacity: 0.15 }}
-            className="absolute w-[90vw] h-[90vw] max-w-[1000px] max-h-[1000px] rounded-full border border-primary/30 blur-3xl"
+            className="absolute w-[90vw] h-[90vw] max-w-[1100px] max-h-[1100px] rounded-full bg-primary/5 blur-[120px] -z-10"
           />
         </motion.div>
       </motion.div>
@@ -100,7 +93,7 @@ export default function Landing() {
                 Commence Audit <ArrowRight size={14} className="ml-2" />
               </Button>
             </Link>
-            <Link to="/auth">
+            <Link to={user ? "/dashboard" : "/auth"}>
               <Button
                 size="lg"
                 variant="liquid-glass"
