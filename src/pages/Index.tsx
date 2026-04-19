@@ -6,10 +6,11 @@ import { Shield, Activity, FileCheck, MapPin, ArrowRight } from "lucide-react";
 
 export default function Landing() {
   const { scrollYProgress } = useScroll();
-  const logoScale = useTransform(scrollYProgress, [0, 0.2], [1, 0.8]);
-  const logoOpacity = useTransform(scrollYProgress, [0, 0.2], [0.15, 0]);
-  const logoBlur = useTransform(scrollYProgress, [0, 0.2], ["blur(0px)", "blur(20px)"]);
-  const textY = useTransform(scrollYProgress, [0, 0.3], [0, -50]);
+  const logoScale = useTransform(scrollYProgress, [0, 0.4], [1.8, 0.9]);
+  const logoOpacity = useTransform(scrollYProgress, [0, 0.1, 0.4], [0, 0.4, 0.1]);
+  const logoBlur = useTransform(scrollYProgress, [0, 0.2, 0.4], ["blur(30px)", "blur(0px)", "blur(10px)"]);
+  const textY = useTransform(scrollYProgress, [0, 0.3], [0, -40]);
+  const logoY = useTransform(scrollYProgress, [0, 1], [0, 200]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden selection:bg-primary/30">
@@ -21,14 +22,16 @@ export default function Landing() {
         style={{ 
           scale: logoScale, 
           opacity: logoOpacity,
-          perspective: 1000,
+          filter: logoBlur,
+          y: logoY,
+          perspective: 2000,
         }}
         className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"
       >
         <motion.div
            style={{
-             rotateY: useTransform(scrollYProgress, [0, 0.4], [0, 35]),
-             rotateX: useTransform(scrollYProgress, [0, 0.4], [0, -10]),
+             rotateY: useTransform(scrollYProgress, [0, 0.4], [0, 65]),
+             rotateX: useTransform(scrollYProgress, [0, 0.4], [0, -25]),
              transformStyle: "preserve-3d",
            }}
            className="relative flex items-center justify-center"
@@ -36,13 +39,13 @@ export default function Landing() {
           <motion.img 
              src="/assets/caduceus_clean.png"
              alt=""
-             className="w-[70%] max-w-[700px] h-auto object-contain drop-shadow-[0_0_80px_rgba(212,175,55,0.25)]"
+             className="w-[80%] max-w-[800px] h-auto object-contain drop-shadow-[0_0_100px_rgba(212,175,55,0.35)]"
              style={{ translateZ: 0 }}
           />
-          {/* Subtle Glow Ring */}
+          {/* Intense Depth Rings */}
           <motion.div 
-            style={{ translateZ: -100, opacity: 0.1 }}
-            className="absolute w-[80vw] h-[80vw] max-w-[900px] max-h-[900px] rounded-full border border-primary/20 blur-2xl"
+            style={{ translateZ: -200, opacity: 0.15 }}
+            className="absolute w-[90vw] h-[90vw] max-w-[1000px] max-h-[1000px] rounded-full border border-primary/30 blur-3xl"
           />
         </motion.div>
       </motion.div>
@@ -100,8 +103,8 @@ export default function Landing() {
             <Link to="/auth">
               <Button
                 size="lg"
-                variant="ghost"
-                className="hover:bg-primary/5 text-foreground font-sans font-bold uppercase tracking-widest text-[11px] h-14 px-12 transition-all duration-300"
+                variant="liquid-glass"
+                className="font-sans font-bold uppercase tracking-widest text-[11px] h-14 px-12 transition-all duration-300 opacity-80 hover:opacity-100 hover:scale-[1.05]"
               >
                 ALREADY LOGGED IN??
               </Button>
