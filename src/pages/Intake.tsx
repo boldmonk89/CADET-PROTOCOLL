@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ENTRY_SCHEMES, TARGET_SERVICES, GENDERS, BLOOD_GROUPS, bmi } from "@/lib/cadet-data";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Check, CalendarIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, CalendarIcon, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
 import { INDIAN_STATES, STATE_CITY_MAP } from "@/lib/cadet-data";
+import { cn } from "@/lib/utils";
 
 const STEPS = [
   { num: 1, label: "Personal Details" },
@@ -261,19 +262,50 @@ function Step1({ profile, update }: { profile: Profile; update: (p: Partial<Prof
           </Select>
         </Field>
         <Field label="City">
-          <Select value={profile.city} onValueChange={(v) => update({ city: v })} disabled={!profile.state}>
-            <SelectTrigger className="bg-background/40 border-primary/20 h-11">
-              <SelectValue placeholder={profile.state ? "Select City" : "Select State First"} />
-            </SelectTrigger>
-            <SelectContent className="z-[100] liquid-glass-ultra">
-              {profile.state && STATE_CITY_MAP[profile.state]?.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
-              {!STATE_CITY_MAP[profile.state || ""] && (
-                <div className="p-2 text-[10px] text-muted-foreground italic">No cities registered for this state</div>
-              )}
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                disabled={!profile.state}
+                className={cn(
+                  "w-full justify-between bg-background/40 border-primary/20 h-11 px-3",
+                  !profile.city && "text-muted-foreground"
+                )}
+              >
+                {profile.city || (profile.state ? "Select or type city..." : "Select state first")}
+                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-[100] liquid-glass-ultra">
+              <Command>
+                <CommandInput placeholder="Search city..." className="h-9" />
+                <CommandList>
+                  <CommandEmpty>No city found.</CommandEmpty>
+                  <CommandGroup>
+                    {profile.state && STATE_CITY_MAP[profile.state]?.map((c) => (
+                      <CommandItem
+                        key={c}
+                        value={c}
+                        onSelect={(currentValue) => {
+                          update({ city: currentValue });
+                        }}
+                        className="font-sans text-xs"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            profile.city === c ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {c}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </Field>
         <Field label="Contact Phone">
           <Input type="tel" value={profile.contact_phone || ""} onChange={(e) => update({ contact_phone: e.target.value })} />

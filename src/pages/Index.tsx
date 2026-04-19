@@ -1,14 +1,37 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Logo } from "@/components/cadet/Logo";
 import { Button } from "@/components/ui/button";
 import { Shield, Activity, FileCheck, MapPin, ArrowRight } from "lucide-react";
 
 export default function Landing() {
+  const { scrollYProgress } = useScroll();
+  const logoScale = useTransform(scrollYProgress, [0, 0.2], [1, 0.8]);
+  const logoOpacity = useTransform(scrollYProgress, [0, 0.2], [0.15, 0]);
+  const logoBlur = useTransform(scrollYProgress, [0, 0.2], ["blur(0px)", "blur(20px)"]);
+  const textY = useTransform(scrollYProgress, [0, 0.3], [0, -50]);
+
   return (
-    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden selection:bg-primary/30">
       {/* Premium Background Effects */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
+      
+      {/* Massive Scroll-Targeted Logo Background */}
+      <motion.div 
+        style={{ 
+          scale: logoScale, 
+          opacity: logoOpacity,
+          filter: logoBlur,
+        }}
+        className="fixed inset-0 flex items-center justify-center pointer-events-none z-0"
+      >
+        <img 
+          src="/assets/logo_ultra.png" 
+          alt="" 
+          className="w-[80%] max-w-[800px] h-auto object-contain drop-shadow-[0_0_100px_rgba(212,175,55,0.15)]" 
+        />
+      </motion.div>
+
       <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/5 to-transparent blur-3xl pointer-events-none"></div>
       
       <header className="container py-8 flex items-center justify-between relative z-10 border-b border-border/30">
@@ -34,10 +57,13 @@ export default function Landing() {
             </span>
           </div>
 
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl text-foreground mb-6 leading-[1.1] tracking-tight">
+          <motion.h1 
+            style={{ y: textY }}
+            className="font-display text-6xl md:text-8xl lg:text-[10rem] text-foreground mb-10 leading-[0.9] tracking-tighter"
+          >
             Forged in <span className="font-display italic text-primary text-glow-gold font-light">Discipline.</span><br />
             Tested in <span className="font-display text-primary text-glow-gold">Field.</span>
-          </h1>
+          </motion.h1>
 
           <p className="font-command italic text-lg md:text-xl text-primary/80 max-w-2xl mx-auto mb-4 tracking-wide">
             AI-POWERED DEFENCE PSYCHOLOGY & MEDICAL AUDIT

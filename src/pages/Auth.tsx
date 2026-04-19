@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signup");
@@ -16,7 +17,15 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Handle existing session
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate("/dashboard");
+    }
+  }, [user, authLoading, navigate]);
 
   // Reset scroll position on mount
   useEffect(() => {
