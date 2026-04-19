@@ -14,8 +14,8 @@ export default function Landing() {
       <header className="container py-8 flex items-center justify-between relative z-10 border-b border-border/30">
         <Logo size="md" />
         <Link to="/auth">
-          <Button variant="ghost" className="font-mono-tac text-xs uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
-            ■ EXAMINER PORTAL
+          <Button variant="ghost" className="font-sans font-bold text-xs uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+            EXAMINER PORTAL
           </Button>
         </Link>
       </header>
@@ -51,9 +51,9 @@ export default function Landing() {
             <Link to="/auth">
               <Button
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-mono-tac uppercase tracking-widest text-xs h-14 px-10 shadow-glow-gold transition-all duration-300 hover:scale-[1.02]"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-sans font-bold uppercase tracking-widest text-xs h-14 px-10 shadow-glow-gold transition-all duration-300 hover:scale-[1.02]"
               >
-                ■ Commence Audit <ArrowRight size={14} className="ml-2" />
+                Commence Audit <ArrowRight size={14} className="ml-2" />
               </Button>
             </Link>
             <Link to="/auth">
@@ -68,37 +68,6 @@ export default function Landing() {
           </div>
         </motion.div>
 
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.1, delayChildren: 0.5 } },
-          }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full mt-24"
-        >
-          {[
-            { icon: Shield, title: "AFMS-Aligned", desc: "Medical standards strictly mapped to official NDA/CDS selection boards." },
-            { icon: Activity, title: "Biometric Pre-Screen", desc: "Physical parameters evaluated safely via our command console." },
-            { icon: FileCheck, title: "Psychological Audit", desc: "Advanced AI evaluates TAT, SRT, and WAT responses using officer-like metrics." },
-            { icon: MapPin, title: "Command Hospital", desc: "Instant geo-routing mapped to the nearest designated Command Hospital." }
-          ].map((f) => (
-            <motion.div
-              key={f.title}
-              variants={{
-                hidden: { opacity: 0, y: 15 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-              }}
-              className="glass-panel p-8 text-left hover:-translate-y-1 transition-transform duration-300 group"
-            >
-              <div className="w-12 h-12 rounded-full border border-primary/20 flex items-center justify-center bg-background/50 mb-6 group-hover:border-primary/50 transition-colors shadow-none group-hover:shadow-glow-gold">
-                 <f.icon size={20} className="text-primary" />
-              </div>
-              <div className="font-command italic text-xl text-foreground mb-3">{f.title}</div>
-              <p className="text-sm text-muted-foreground leading-relaxed font-light">{f.desc}</p>
-            </motion.div>
-          ))}
-        </motion.div>
       </section>
 
       <footer className="container py-8 border-t border-border/20 text-center text-[10px] font-mono-tac uppercase tracking-[0.2em] text-muted-foreground relative z-10 bg-background/80">

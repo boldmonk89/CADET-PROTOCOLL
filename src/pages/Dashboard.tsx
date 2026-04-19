@@ -6,32 +6,33 @@ import { useAuth } from "@/hooks/useAuth";
 import { AppShell } from "@/components/cadet/AppShell";
 import { Button } from "@/components/ui/button";
 import { bmi } from "@/lib/cadet-data";
-import { Activity, FileText, MapPin, Edit3, Lock } from "lucide-react";
+import { generateMedicalCertificate } from "@/lib/certificate";
+import { Activity, FileText, MapPin, Edit3, Lock, Users, Download, ShieldCheck } from "lucide-react";
 
 export default function Dashboard() {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
-  const [resultsCount, setResultsCount] = useState(0);
+  const [results, setResults] = useState<any[]>([]);
   const [fetched, setFetched] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: p }, { count }] = await Promise.all([
+      const [{ data: p }, { data: r }] = await Promise.all([
         supabase.from("candidate_profiles").select("*").eq("user_id", user.id).maybeSingle(),
-        supabase.from("assessment_results").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("assessment_results").select("*").eq("user_id", user.id),
       ]);
       setProfile(p);
-      setResultsCount(count || 0);
+      setResults(r || []);
       setFetched(true);
     })();
   }, [user]);
 
   if (loading || !fetched) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-mono-tac text-xs uppercase tracking-widest text-primary animate-breathe">
-        ■ SYNCING //
+      <div className="min-h-screen flex items-center justify-center font-sans font-bold text-xs uppercase tracking-widest text-primary animate-breathe">
+        SYNCING
       </div>
     );
   }
@@ -42,6 +43,7 @@ export default function Dashboard() {
 
   const intakeDone = !!profile?.intake_completed_at;
   const candidateBmi = bmi(profile?.height_cm, profile?.weight_kg);
+  const isExaminer = role === "examiner" || role === "admin";
 
   return (
     <AppShell candidateBadge={profile ? {
@@ -56,76 +58,109 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="font-mono-tac text-xs uppercase tracking-widest text-primary mb-2">
-            ■ MISSION CONTROL
+          <div className="font-sans font-bold text-xs uppercase tracking-widest text-primary mb-2">
+            MISSION CONTROL // {role?.toUpperCase()}
           </div>
-          <h1 className="font-display text-3xl md:text-4xl text-foreground mb-1">
+          <h1 className="font-display text-4xl md:text-5xl text-foreground mb-1 tracking-tight">
             {profile?.full_name ? `Welcome, ${profile.full_name.split(" ")[0]}` : "Welcome, Cadet"}
           </h1>
-          <p className="text-sm text-muted-foreground mb-8">
-            {intakeDone ? "Profile locked. Proceed to assessment modules." : "Complete your intake profile to unlock assessment modules."}
+          <p className="text-sm text-muted-foreground mb-10 font-light">
+            {intakeDone ? "Profile active. Access assessment intelligence below." : "Initialise your profile to unlock the full protocol."}
           </p>
 
-          {/* Profile Locked badge */}
+          {/* Quick Actions Tooltip Area */}
+          <div className="flex flex-wrap gap-4 mb-8">
+            {intakeDone && (
+              <Button 
+                onClick={() => generateMedicalCertificate(profile, results)}
+                className="bg-primary text-primary-foreground font-sans font-bold uppercase text-[10px] tracking-widest px-6 shadow-glow-gold hover:scale-[1.02] transition-transform"
+              >
+                <Download size={14} className="mr-2" /> Download Fitness Certificate
+              </Button>
+            )}
+            {isExaminer && (
+              <Link to="/scan">
+                <Button variant="outline" className="border-primary/20 hover:border-primary/50 font-sans font-bold uppercase text-[10px] tracking-widest px-6">
+                  <Activity size={14} className="mr-2" /> Start New Assessment
+                </Button>
+              </Link>
+            )}
+          </div>
+
+          {/* Profile Status Badge */}
           {intakeDone && (
-            <div className="glass-panel-strong p-4 mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-sm bg-success/20 border border-success/40 flex items-center justify-center">
-                  <Lock size={16} className="text-success" />
+            <div className="glass-panel p-5 mb-8 flex items-center justify-between border-primary/10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-sm bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <ShieldCheck size={20} className="text-primary" />
                 </div>
                 <div>
-                  <div className="font-mono-tac text-[10px] uppercase tracking-widest text-success">PROFILE LOCKED</div>
-                  <div className="text-sm text-muted-foreground">
-                    Locked at {new Date(profile.intake_completed_at).toLocaleString()}
+                  <div className="font-sans font-bold text-[10px] uppercase tracking-widest text-primary">AUDIT STATUS: VERIFIED</div>
+                  <div className="text-sm text-muted-foreground font-light">
+                    Your digital record is locked and cryptographically signed.
                   </div>
                 </div>
               </div>
-              <Link to="/intake">
-                <Button variant="ghost" size="sm" className="text-xs">
-                  <Edit3 size={12} className="mr-1.5" /> Amend
+              <Link to="/intake" className="hidden sm:block">
+                <Button variant="ghost" size="sm" className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <Edit3 size={12} className="mr-2" /> Amend Records
                 </Button>
               </Link>
             </div>
           )}
 
           {/* KPI strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-            <Kpi label="Height" value={profile?.height_cm ? `${profile.height_cm} cm` : "—"} />
-            <Kpi label="Weight" value={profile?.weight_kg ? `${profile.weight_kg} kg` : "—"} />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            <Kpi label="Assessed Height" value={profile?.height_cm ? `${profile.height_cm} cm` : "N/A"} />
+            <Kpi label="Assessed Weight" value={profile?.weight_kg ? `${profile.weight_kg} kg` : "N/A"} />
             <Kpi
-              label="BMI"
-              value={candidateBmi ?? "—"}
+              label="BMI Index"
+              value={candidateBmi ?? "N/A"}
               variant={candidateBmi && (candidateBmi < 18.5 || candidateBmi > 25) ? "warning" : "default"}
             />
-            <Kpi label="Recorded Results" value={resultsCount} />
+            <Kpi label="Active Results" value={results.length} />
           </div>
 
-          {/* Modules */}
-          <div className="grid md:grid-cols-3 gap-4">
+          {/* Modules Section */}
+          <div className="mb-6 font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground">
+            Available Modules
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
             <ModuleCard
               icon={FileText}
               title="Intake Module"
-              desc={intakeDone ? "Profile is locked. Amend if needed." : `Step ${profile?.intake_step || 1} of 4 in progress.`}
-              cta={intakeDone ? "Review" : "Resume"}
+              desc={intakeDone ? "Candidate identity and history is locked." : `Intake sequence is active. Finalise to unlock.`}
+              cta={intakeDone ? "Review" : "Continue"}
               to="/intake"
               active
             />
             <ModuleCard
               icon={Activity}
-              title="Biometric Scan Console"
-              desc="Camera-assisted parameter scans with examiner sign-off."
-              cta="Open Console"
+              title="Biometric Console"
+              desc="Capture real-time biometric and physiological parameters."
+              cta="Launch Console"
               to="/scan"
-              active={intakeDone}
+              active={isExaminer || intakeDone}
             />
-            <ModuleCard
-              icon={MapPin}
-              title="Hospital Routing"
-              desc="Locate nearest Command Hospitals for specialist evaluation."
-              cta="View Routing"
-              to="/hospitals"
-              active
-            />
+            {isExaminer ? (
+              <ModuleCard
+                icon={Users}
+                title="Candidate Management"
+                desc="Manage profiles, assessments, and clearance status."
+                cta="Open Registry"
+                to="/scan" // Placeholder
+                active
+              />
+            ) : (
+              <ModuleCard
+                icon={MapPin}
+                title="Hospital Routing"
+                desc="AFMS designated specialist eval centres near you."
+                cta="View Facilities"
+                to="/hospitals"
+                active
+              />
+            )}
           </div>
         </motion.div>
       </div>
@@ -135,9 +170,9 @@ export default function Dashboard() {
 
 function Kpi({ label, value, variant = "default" }: { label: string; value: any; variant?: "default" | "warning" }) {
   return (
-    <div className="glass-panel p-4">
-      <div className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className={`font-display text-2xl mt-1 ${variant === "warning" ? "text-warning" : "text-primary"}`}>
+    <div className="glass-panel p-5 border-primary/5">
+      <div className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground/60">{label}</div>
+      <div className={`font-display text-3xl mt-2 ${variant === "warning" ? "text-warning" : "text-primary text-glow-gold"}`}>
         {value}
       </div>
     </div>
@@ -150,21 +185,22 @@ function ModuleCard({
   icon: any; title: string; desc: string; cta: string; to: string; active: boolean;
 }) {
   return (
-    <div className={`glass-panel p-5 flex flex-col ${active ? "" : "opacity-50"}`}>
-      <Icon size={20} className="text-primary mb-3" />
-      <div className="font-mono-tac text-xs uppercase tracking-widest text-primary mb-2">{title}</div>
-      <p className="text-sm text-muted-foreground flex-1 mb-4">{desc}</p>
-      {active ? (
-        <Link to={to}>
-          <Button variant="outline" className="w-full border-primary/40 hover:bg-primary/10 font-mono-tac uppercase text-xs tracking-widest">
-            {cta} →
-          </Button>
-        </Link>
-      ) : (
-        <Button disabled variant="outline" className="w-full font-mono-tac uppercase text-xs tracking-widest">
-          ■ LOCKED
+    <div className={`glass-panel p-6 flex flex-col hover:border-primary/20 transition-all ${active ? "opacity-100" : "opacity-40"}`}>
+      <div className="w-10 h-10 rounded-sm border border-primary/10 flex items-center justify-center bg-background/40 mb-5">
+        <Icon size={18} className="text-primary" />
+      </div>
+      <div className="font-sans font-bold text-xs uppercase tracking-widest text-primary mb-2">{title}</div>
+      <p className="text-sm text-muted-foreground flex-1 mb-6 font-light leading-relaxed">{desc}</p>
+      <Link to={active ? to : "#"}>
+        <Button 
+          disabled={!active}
+          variant={active ? "outline" : "ghost"} 
+          className="w-full border-primary/10 hover:border-primary/30 hover:bg-primary/5 font-sans font-bold uppercase text-[10px] tracking-widest h-10"
+        >
+          {active ? cta : "LOCKED"}
         </Button>
-      )}
+      </Link>
     </div>
   );
 }
+

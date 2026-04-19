@@ -27,7 +27,7 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/intake" element={<ProtectedRoute><Intake /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/scan" element={<ProtectedRoute><ScanConsole /></ProtectedRoute>} />
+            <Route path="/scan" element={<ProtectedRoute requiredRole="examiner"><ScanConsole /></ProtectedRoute>} />
             <Route path="/hospitals" element={<ProtectedRoute><Hospitals /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

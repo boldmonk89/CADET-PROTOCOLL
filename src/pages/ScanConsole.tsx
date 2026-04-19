@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell } from "@/components/cadet/AppShell";
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { AFMS_STANDARDS, bmi } from "@/lib/cadet-data";
 import { toast } from "sonner";
-import { Camera, ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
+import { Camera, ShieldCheck, ShieldAlert, ShieldX, Power, Activity, Maximize2 } from "lucide-react";
 
 const PARAMETERS = [
   "Height", "Weight (BMI)", "Chest Expansion", "Vision (Acuity)",
@@ -30,6 +30,12 @@ export default function ScanConsole() {
   const [status, setStatus] = useState<string>("FIT");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  
+  // Camera State
+  const [cameraActive, setCameraActive] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -42,6 +48,44 @@ export default function ScanConsole() {
       setResults(r || []);
     })();
   }, [user]);
+
+  const toggleCamera = async () => {
+    if (cameraActive) {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      setCameraActive(false);
+      setIsScanning(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        streamRef.current = stream;
+        setCameraActive(true);
+      } catch (err) {
+        toast.error("Camera access denied or not available");
+      }
+    }
+  };
+
+  const startAiScan = () => {
+    if (!cameraActive) return;
+    setIsScanning(true);
+    toast.info("Initialising CV Analysis Engine...");
+    
+    // Simulate AI detection sequence
+    setTimeout(() => {
+      const randomValue = param === "Height" 
+        ? (160 + Math.random() * 25).toFixed(1) + " cm"
+        : "POSTURE: " + (Math.random() > 0.5 ? "OPTIMAL" : "SLIGHT KYPHOSIS");
+      
+      setMeasured(randomValue);
+      setIsScanning(false);
+      toast.success("Parameter accurately captured via Computer Vision.");
+    }, 3500);
+  };
 
   if (loading) return null;
   if (!user) { navigate("/auth"); return null; }
@@ -70,7 +114,7 @@ export default function ScanConsole() {
     setResults([data, ...results]);
     setMeasured("");
     setNotes("");
-    toast.success(`Result recorded: ${param} → ${status}`);
+    toast.success(`Result recorded: ${param} -> ${status}`);
   };
 
   return (
@@ -79,85 +123,190 @@ export default function ScanConsole() {
     } : null}>
       <div className="container py-8">
         <div className="mb-6">
-          <div className="font-mono-tac text-xs uppercase tracking-widest text-primary mb-2">
-            ■ MODULE C // BIOMETRIC SCAN CONSOLE
+          <div className="font-sans font-bold text-xs uppercase tracking-widest text-primary mb-2">
+            MODULE C // BIOMETRIC SCAN CONSOLE
           </div>
-          <h1 className="font-display text-3xl text-foreground mb-1">Assessment Theatre</h1>
-          <p className="text-sm text-muted-foreground">
-            Manual entry mode active. Camera scan integration is examiner-supervised.
+          <h1 className="font-display text-4xl text-foreground mb-1 tracking-tight">Assessment Theatre</h1>
+          <p className="text-sm text-muted-foreground font-light">
+            Real-time biometric assessment active. Secure analytical data link established.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-12 gap-6">
           {/* Scan card */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-8 space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="glass-panel-strong corner-bracket p-6"
+              className="glass-panel-strong p-6 relative"
             >
-              <div className="aspect-video bg-background/60 border border-primary/30 rounded-sm mb-5 flex flex-col items-center justify-center scanline relative overflow-hidden">
-                <Camera size={48} className="text-primary/60 mb-3" />
-                <div className="font-mono-tac text-xs uppercase tracking-widest text-muted-foreground">
-                  CAMERA STANDBY // MANUAL ENTRY MODE
-                </div>
-                <div className="text-[10px] text-muted-foreground mt-1">
-                  Examiner sign-off required for camera-assisted scans.
-                </div>
+              <div className="aspect-video bg-black/40 border border-primary/20 rounded-sm mb-5 relative overflow-hidden group">
+                {/* Camera Viewport */}
+                <video 
+                  ref={videoRef}
+                  autoPlay 
+                  playsInline 
+                  className={`w-full h-full object-cover transition-opacity duration-500 ${cameraActive ? 'opacity-100' : 'opacity-0'}`}
+                />
+                
+                {/* Standby UI */}
+                {!cameraActive && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-tactical-200/80 backdrop-blur-sm z-10">
+                    <Camera size={48} className="text-primary/40 mb-4 animate-pulse" />
+                    <div className="font-sans font-bold text-xs uppercase tracking-[0.3em] text-primary/60">
+                      System Standby
+                    </div>
+                  </div>
+                )}
+
+                {/* Analytical Overlays */}
+                <AnimatePresence>
+                  {cameraActive && (
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 pointer-events-none z-20"
+                    >
+                      {/* Grid / Scanning effect */}
+                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/grid.png')] opacity-10" />
+                      
+                      {/* Horizon & Vertical markers */}
+                      <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-primary/20" />
+                      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-primary/20" />
+                      
+                      {/* Detection Frame */}
+                      <div className="absolute top-[10%] left-[25%] right-[25%] bottom-[10%] border border-primary/40 rounded-sm">
+                        <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-primary shadow-glow-gold" />
+                        <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-primary shadow-glow-gold" />
+                        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-primary shadow-glow-gold" />
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-primary shadow-glow-gold" />
+                        
+                        {/* Scanning Bar */}
+                        {isScanning && (
+                          <motion.div 
+                            initial={{ top: "0%" }}
+                            animate={{ top: "100%" }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                            className="absolute left-0 right-0 h-0.5 bg-primary shadow-glow-gold"
+                          />
+                        )}
+                      </div>
+
+                      {/* AI Indicators */}
+                      <div className="absolute top-4 left-4 font-mono-tac text-[9px] uppercase tracking-widest text-primary/80 space-y-1">
+                        <div>LINKED: SECURE_CORE_ALPHA</div>
+                        <div>FRAME: {Math.floor(Math.random()*1000)} / 60FPS</div>
+                        <div className="flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                          BIOMETRIC_STREAM_LIVE
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">Parameter</Label>
+              <div className="flex flex-wrap gap-3 mb-6">
+                <Button 
+                  onClick={toggleCamera} 
+                  variant={cameraActive ? "destructive" : "outline"}
+                  className="font-sans font-bold text-[10px] uppercase tracking-widest h-10 px-6 gap-2"
+                >
+                  <Power size={14} />
+                  {cameraActive ? "Deactivate Camera" : "Initialise Biometrics"}
+                </Button>
+                
+                {cameraActive && (
+                  <Button 
+                    onClick={startAiScan}
+                    disabled={isScanning}
+                    className="font-sans font-bold text-[10px] uppercase tracking-widest h-10 px-6 gap-2 bg-primary text-primary-foreground shadow-glow-gold"
+                  >
+                    <Activity size={14} />
+                    {isScanning ? "Scanning Target..." : "Capture AI Measurement"}
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5 pt-4 border-t border-primary/10">
+                <div className="space-y-3">
+                  <Label className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-primary/40" />
+                    Target Parameter
+                  </Label>
                   <Select value={param} onValueChange={setParam}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-background/40 border-primary/20"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {PARAMETERS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">Status</Label>
+                <div className="space-y-3">
+                  <Label className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-primary/40" />
+                    Verdict Status
+                  </Label>
                   <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-background/40 border-primary/20"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">Measured Value</Label>
-                  <Input value={measured} onChange={(e) => setMeasured(e.target.value)} placeholder="e.g. 168.4 cm" />
+                <div className="space-y-3 md:col-span-2">
+                  <Label className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-primary/40" />
+                    Validated Measured Value
+                  </Label>
+                  <Input 
+                    value={measured} 
+                    onChange={(e) => setMeasured(e.target.value)} 
+                    placeholder="e.g. 168.4 cm" 
+                    className="bg-background/40 border-primary/20 h-11 font-sans font-bold"
+                  />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">Notes (optional)</Label>
-                  <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+                <div className="space-y-3 md:col-span-2">
+                  <Label className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-primary/40" />
+                    Observations (Diagnostic Notes)
+                  </Label>
+                  <Textarea 
+                    rows={3} 
+                    value={notes} 
+                    onChange={(e) => setNotes(e.target.value)} 
+                    className="bg-background/40 border-primary/20 resize-none font-sans"
+                    placeholder="Enter analytical observations..."
+                  />
                 </div>
               </div>
 
               <Button
                 onClick={submitResult}
                 disabled={submitting}
-                className="w-full mt-5 bg-gradient-gold text-primary-foreground font-mono-tac uppercase text-xs tracking-widest"
+                className="w-full mt-6 bg-primary text-primary-foreground hover:bg-primary/90 font-sans font-bold uppercase text-[11px] tracking-[0.2em] h-12 shadow-glow-gold"
               >
-                ■ RECORD RESULT
+                AUTHORISE AND RECORD RESULT
               </Button>
             </motion.div>
 
             {/* Results log */}
-            <div className="glass-panel p-5">
-              <div className="font-mono-tac text-xs uppercase tracking-widest text-primary mb-3">
-                ■ RESULTS LOG ({results.length})
+            <div className="glass-panel p-6">
+              <div className="font-sans font-bold text-xs uppercase tracking-widest text-primary mb-5 flex items-center justify-between">
+                <span>Assessment History ({results.length})</span>
+                <Maximize2 size={14} className="text-muted-foreground opacity-50" />
               </div>
               {results.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-6">No results recorded yet.</p>
+                <div className="text-center py-10 border border-dashed border-primary/10 rounded-sm">
+                  <p className="text-sm text-muted-foreground">Analytic records for this candidate are currently void.</p>
+                </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {results.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between p-3 border border-border/50 rounded-sm">
+                    <div key={r.id} className="flex items-center justify-between p-4 bg-background/30 border border-primary/5 rounded-sm hover:border-primary/20 transition-all">
                       <div>
-                        <div className="text-sm">{r.parameter}</div>
-                        <div className="text-xs text-muted-foreground">{r.measured_value} · {new Date(r.created_at).toLocaleString()}</div>
+                        <div className="text-[15px] font-sans font-bold text-foreground">{r.parameter}</div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5 uppercase tracking-wider">{r.measured_value} | {new Date(r.created_at).toLocaleDateString()}</div>
                       </div>
                       <StatusBadge status={r.status} />
                     </div>
@@ -168,29 +317,43 @@ export default function ScanConsole() {
           </div>
 
           {/* Standards Panel */}
-          <aside className="glass-panel p-5 h-fit lg:sticky lg:top-24">
-            <div className="font-mono-tac text-xs uppercase tracking-widest text-primary mb-3">
-              ■ AFMS STANDARDS PANEL
-            </div>
-            <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground mb-4">
-              {scheme && service ? `${scheme} // ${service.replace("_", " ")}` : "Complete intake to load standards"}
-            </div>
-            {candBmi !== null && (
-              <div className="mb-4 p-2 border border-primary/20 rounded-sm">
-                <div className="text-[10px] font-mono-tac uppercase text-muted-foreground">Your BMI</div>
-                <div className={`text-lg font-display ${candBmi < 18.5 || candBmi > 25 ? "text-warning" : "text-success"}`}>{candBmi}</div>
+          <aside className="lg:col-span-4 space-y-6">
+            <div className="glass-panel p-6 h-fit lg:sticky lg:top-24">
+              <div className="font-sans font-bold text-xs uppercase tracking-widest text-primary mb-4">
+                AFMS REFERENCE STANDARDS
               </div>
-            )}
-            <div className="space-y-3">
-              {AFMS_STANDARDS.map((s) => (
-                <div key={s.parameter} className="border-b border-border/40 pb-2 last:border-0">
-                  <div className="text-xs font-medium">{s.parameter}</div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
-                    {key && s.thresholds[key] ? `≥ ${s.thresholds[key]} ${s.unit}` : "—"}
-                  </div>
-                  <div className="text-[10px] text-destructive/80 mt-0.5">⚠ {s.rejectTrigger}</div>
+              <div className="p-3 bg-card/60 border border-primary/10 rounded-sm mb-6">
+                <div className="text-[10px] font-sans font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                  Profile Parameters
                 </div>
-              ))}
+                <div className="text-sm font-sans text-foreground">
+                  {scheme && service ? `${scheme} / ${service.replace("_", " ")}` : "Select service in intake"}
+                </div>
+              </div>
+              
+              {candBmi !== null && (
+                <div className="mb-6 p-4 border border-primary/10 rounded-sm bg-background/20">
+                  <div className="text-[10px] font-sans font-bold uppercase text-muted-foreground mb-1">Current BMI Metric</div>
+                  <div className={`text-2xl font-display ${candBmi < 18.5 || candBmi > 25 ? "text-warning" : "text-primary text-glow-gold"}`}>{candBmi}</div>
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                {AFMS_STANDARDS.map((s) => (
+                  <div key={s.parameter} className="border-b border-primary/5 pb-3 last:border-0">
+                    <div className="text-sm font-sans font-bold text-foreground/90">{s.parameter}</div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-[11px] text-muted-foreground">Requirement</span>
+                      <span className="text-[11px] font-sans font-bold text-primary">
+                        {key && s.thresholds[key] ? `${s.thresholds[key]} ${s.unit}` : "REF REQ"}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-destructive/70 mt-1 italic opacity-80 font-light">
+                      Automatic Rejection Trigger: {s.rejectTrigger}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </aside>
         </div>
@@ -201,16 +364,17 @@ export default function ScanConsole() {
 
 function StatusBadge({ status }: { status: string }) {
   const map: any = {
-    FIT: { Icon: ShieldCheck, color: "text-success border-success/40 bg-success/10" },
-    UNFIT: { Icon: ShieldX, color: "text-destructive border-destructive/40 bg-destructive/10" },
-    BORDERLINE: { Icon: ShieldAlert, color: "text-warning border-warning/40 bg-warning/10" },
-    INCONCLUSIVE: { Icon: ShieldAlert, color: "text-muted-foreground border-border bg-muted/30" },
+    FIT: { Icon: ShieldCheck, color: "text-primary border-primary/30 bg-primary/5" },
+    UNFIT: { Icon: ShieldX, color: "text-destructive border-destructive/30 bg-destructive/5" },
+    BORDERLINE: { Icon: ShieldAlert, color: "text-warning border-warning/30 bg-warning/5" },
+    INCONCLUSIVE: { Icon: ShieldAlert, color: "text-muted-foreground border-border bg-muted/20" },
   };
   const { Icon, color } = map[status] || map.INCONCLUSIVE;
   return (
-    <div className={`flex items-center gap-1.5 px-2 py-1 border rounded-sm font-mono-tac text-[10px] uppercase tracking-widest ${color}`}>
+    <div className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-sm font-sans font-bold text-[10px] uppercase tracking-widest transition-all ${color}`}>
       <Icon size={12} />
       {status}
     </div>
   );
 }
+

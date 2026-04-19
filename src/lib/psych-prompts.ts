@@ -232,7 +232,7 @@ RULES:
 - Use the 60 cases above as your REFERENCE KNOWLEDGE ONLY.
 
 ### CANDIDATE DATA FOR ANALYSIS:
-\${responses.map(r => \`Situation \${r.situationNumber}: "\${r.situation}"\\nResponse: "\${r.response}"\`).join('\\n\\n')}
+${responses.map(r => `Situation ${r.situationNumber}: "${r.situation}"\nResponse: "${r.response}"`).join('\n\n')}
 
 ### EVALUATION INSTRUCTIONS (per situation):
 1. Situation-Response Fit: Does the candidate's response DIRECTLY and LOGICALLY address the situation AND its consequences? Mark as COMPLETE / PARTIAL / FAIL.
@@ -279,14 +279,14 @@ SD TEMPLATES (Reference Styles):
 - Self: Hardworking, goal-oriented, optimistic, determined, resilient.
 - Goals: Balanced leader, disciplined/empathetic, dependable officer, mentally strong.
 
-Paragraph Type: \${paragraphType}
-Content: "\${content}"
+Paragraph Type: ${paragraphType}
+Content: "${content}"
 
 Provide analysis:
 1. **Authenticity Check**: Does it match the calibration profiles (Shrinika/Megha style) or sound like a coached template?
 2. **OLQ Mapping**: Evidence from quotes. (Effective Intel, Reasoning, Org, Expression, Adaptability, Cooperation, Responsibility, Initiative, Confidence, Decision, Influence, Liveliness, Determination, Courage, Stamina).
 3. **Mistakes**: Vague lines, over-claiming qualities without action.
-4. **Consistency**: Does it align with \${paragraphType} perspective?
+4. **Consistency**: Does it align with ${paragraphType} perspective?
 5. **Rewritten Paragraph (Ideal Version)**: 80-120 words. Action-oriented, using calibration style. 
 6. **Score**: X/10 with justification.
 
@@ -312,38 +312,38 @@ Then overall SD summary with consistency patterns and top improvements. Keep con
 }
 
 export function buildVerifyDocumentPrompt(type: 'TAT' | 'WAT' | 'SRT' | 'SD'): string {
-  const common = "\\n\\nYou are a document verification AI. Your ONLY job is to verify if the uploaded file is the CORRECT document for the specified test. DO NOT analyze the psychological content. Only check format, counts, and visual style.\\n\\nIF VALID: Respond ONLY with 'VALID: [Short confirmation]'.\\nIF INVALID: Respond ONLY with 'REJECTED: [Specific reason why it is invalid]'.";
+  const common = "\n\nYou are a document verification AI. Your ONLY job is to verify if the uploaded file is the CORRECT document for the specified test. DO NOT analyze the psychological content. Only check format, counts, and visual style.\n\nIF VALID: Respond ONLY with 'VALID: [Short confirmation]'.\nIF INVALID: Respond ONLY with 'REJECTED: [Specific reason why it is invalid]'.";
 
   switch (type) {
     case 'SRT':
-      return \`This must be a handwritten or printed SRT (Situation Reaction Test) response sheet.
+      return `This must be a handwritten or printed SRT (Situation Reaction Test) response sheet.
 REJECT if:
 - It does NOT contain exactly 60 numbered responses.
 - It contains any content other than situation-reaction pairs.
-- It is a different type of test (like TAT or WAT).\${common}\`;
+- It is a different type of test (like TAT or WAT).${common}`;
 
     case 'WAT':
-      return \`This must be a handwritten or printed WAT (Word Association Test) response sheet.
+      return `This must be a handwritten or printed WAT (Word Association Test) response sheet.
 REJECT if:
 - It does NOT contain exactly 60 numbered word-sentence pairs.
 - It contains random text or irrelevant content.
-- It is a different type of test.\${common}\`;
+- It is a different type of test.${common}`;
 
     case 'TAT':
-      return \`This must be an SSB TAT (Thematic Apperception Test) response sheet or a valid TAT sketch.
+      return `This must be an SSB TAT (Thematic Apperception Test) response sheet or a valid TAT sketch.
 REJECT if the image is:
 - A photo of a screen, monitor, or tablet.
 - A photo of real people/scenes (photograph).
 - Unrelated to SSB TAT patterns.
-- Colorful/RGB images (not sketches).\${common}\`;
+- Colorful/RGB images (not sketches).${common}`;
 
     case 'SD':
-      return \`This must be a Self Description (SD) response sheet.
+      return `This must be a Self Description (SD) response sheet.
 REJECT if:
 - It does NOT contain exactly 5 paragraphs corresponding to the 5 standard SSB headings (Parents, Teachers, Friends, Self, Qualities to develop).
-- The paragraphs are too short (less than 30 words each) or irrelevant.\${common}\`;
+- The paragraphs are too short (less than 30 words each) or irrelevant.${common}`;
 
     default:
-      return \`Verify if this document is relevant to SSB psychological testing.\${common}\`;
+      return `Verify if this document is relevant to SSB psychological testing.${common}`;
   }
 }

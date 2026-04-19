@@ -129,9 +129,9 @@ export default function AuthPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-mono-tac uppercase tracking-[0.2em] text-xs h-12 shadow-glow-gold transition-all mt-4"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-sans font-bold uppercase tracking-[0.2em] text-xs h-12 shadow-glow-gold transition-all mt-4"
             >
-              {loading ? "PROCESSING //" : mode === "signup" ? "■ INITIALISE" : "■ AUTHENTICATE"}
+              {loading ? "PROCESSING" : mode === "signup" ? "INITIALISE" : "AUTHENTICATE"}
             </Button>
           </form>
 

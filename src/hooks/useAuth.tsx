@@ -5,27 +5,51 @@ import { supabase } from "@/integrations/supabase/client";
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
+  role: "candidate" | "examiner" | "admin" | null;
   loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextValue>({ user: null, session: null, loading: true });
+const AuthContext = createContext<AuthContextValue>({ user: null, session: null, role: null, loading: true });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<"candidate" | "examiner" | "admin" | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchRole = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .maybeSingle();
+    
+    if (data) {
+      setRole(data.role as any);
+    } else {
+      setRole("candidate"); // Default
+    }
+  };
+
   useEffect(() => {
-    // Set up listener FIRST (per Supabase auth best practice)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      setUser(newSession?.user ?? null);
+      const newUser = newSession?.user ?? null;
+      setUser(newUser);
+      if (newUser) {
+        fetchRole(newUser.id);
+      } else {
+        setRole(null);
+      }
     });
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: existing } }) => {
       setSession(existing);
-      setUser(existing?.user ?? null);
+      const newUser = existing?.user ?? null;
+      setUser(newUser);
+      if (newUser) {
+        fetchRole(newUser.id);
+      }
       setLoading(false);
     });
 
@@ -33,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading }}>
+    <AuthContext.Provider value={{ user, session, role, loading }}>
       {children}
     </AuthContext.Provider>
   );

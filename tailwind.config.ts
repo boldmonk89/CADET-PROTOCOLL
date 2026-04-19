@@ -85,9 +85,9 @@ export default {
       },
       fontFamily: {
         display: ["'Playfair Display'", "serif"],
-        sans: ["'Inter'", "sans-serif"],
-        "mono-tac": ["'SF Text'", "'Courier New'", "monospace"],
-        command: ["'Times New Roman'", "serif"],
+        sans: ["'SF Pro Display'", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        "mono-tac": ["'SF Compact Display'", "-apple-system", "system-ui", "sans-serif"],
+        command: ["'SF Pro Text'", "-apple-system", "sans-serif"],
       },
       borderWidth: {
         "1": "1px",
