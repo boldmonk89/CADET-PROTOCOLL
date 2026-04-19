@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          log_id: string
+          payload: Json | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          log_id?: string
+          payload?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          log_id?: string
+          payload?: Json | null
+        }
+        Relationships: []
+      }
       candidate_profiles: {
         Row: {
           blood_group: string | null
@@ -125,6 +155,158 @@ export type Database = {
         }
         Relationships: []
       }
+      examiners: {
+        Row: {
+          afms_registration_number: string | null
+          created_at: string | null
+          examiner_id: string
+          institution_id: string | null
+          last_active: string | null
+          mfa_enabled: boolean | null
+          name: string
+          role: Database["public"]["Enums"]["examiner_role"]
+        }
+        Insert: {
+          afms_registration_number?: string | null
+          created_at?: string | null
+          examiner_id?: string
+          institution_id?: string | null
+          last_active?: string | null
+          mfa_enabled?: boolean | null
+          name: string
+          role: Database["public"]["Enums"]["examiner_role"]
+        }
+        Update: {
+          afms_registration_number?: string | null
+          created_at?: string | null
+          examiner_id?: string
+          institution_id?: string | null
+          last_active?: string | null
+          mfa_enabled?: boolean | null
+          name?: string
+          role?: Database["public"]["Enums"]["examiner_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "examiners_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["institution_id"]
+          },
+        ]
+      }
+      institutions: {
+        Row: {
+          created_at: string | null
+          institution_id: string
+          max_candidates: number | null
+          name: string
+          region_code: string | null
+          subscription_expiry: string | null
+          tier: string | null
+          type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          institution_id?: string
+          max_candidates?: number | null
+          name: string
+          region_code?: string | null
+          subscription_expiry?: string | null
+          tier?: string | null
+          type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          institution_id?: string
+          max_candidates?: number | null
+          name?: string
+          region_code?: string | null
+          subscription_expiry?: string | null
+          tier?: string | null
+          type?: string | null
+        }
+        Relationships: []
+      }
+      medical_scans: {
+        Row: {
+          ai_result: Json | null
+          candidate_id: string
+          confidence_score: number | null
+          created_at: string | null
+          examiner_id: string
+          override_by: string | null
+          override_reason: string | null
+          raw_measurement: Json | null
+          scan_id: string
+          scan_type: string
+          status: string | null
+          video_reference_url: string | null
+        }
+        Insert: {
+          ai_result?: Json | null
+          candidate_id: string
+          confidence_score?: number | null
+          created_at?: string | null
+          examiner_id: string
+          override_by?: string | null
+          override_reason?: string | null
+          raw_measurement?: Json | null
+          scan_id?: string
+          scan_type: string
+          status?: string | null
+          video_reference_url?: string | null
+        }
+        Update: {
+          ai_result?: Json | null
+          candidate_id?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          examiner_id?: string
+          override_by?: string | null
+          override_reason?: string | null
+          raw_measurement?: Json | null
+          scan_id?: string
+          scan_type?: string
+          status?: string | null
+          video_reference_url?: string | null
+        }
+        Relationships: []
+      }
+      psych_sessions: {
+        Row: {
+          ai_analysis: Json | null
+          assessor_notes: string | null
+          candidate_id: string
+          created_at: string | null
+          olq_scores: Json | null
+          responses: Json | null
+          session_id: string
+          session_type: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          assessor_notes?: string | null
+          candidate_id: string
+          created_at?: string | null
+          olq_scores?: Json | null
+          responses?: Json | null
+          session_id?: string
+          session_type: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          assessor_notes?: string | null
+          candidate_id?: string
+          created_at?: string | null
+          olq_scores?: Json | null
+          responses?: Json | null
+          session_id?: string
+          session_type?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -161,6 +343,7 @@ export type Database = {
     }
     Enums: {
       app_role: "candidate" | "examiner" | "admin"
+      examiner_role: "MEDICAL_OFFICER" | "PSYCHOLOGIST" | "ADMIN" | "AI_ONLY"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -289,6 +472,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["candidate", "examiner", "admin"],
+      examiner_role: ["MEDICAL_OFFICER", "PSYCHOLOGIST", "ADMIN", "AI_ONLY"],
     },
   },
 } as const
