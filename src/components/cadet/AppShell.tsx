@@ -97,38 +97,47 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
         </div>
       </aside>
 
-      {/* MOBILE MENU VERLAY */}
+      {/* MOBILE MENU OVERLAY */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex flex-col">
-          <div className="p-4 flex justify-between items-center border-b border-border">
-            <Logo size="sm" />
-            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
-              <X className="text-primary" />
-            </Button>
-          </div>
-          <div className="flex-1 p-6 space-y-4">
-            {navItems.map((item) => {
-              const isExaminerRequired = item.path === "/scan";
-              if (isExaminerRequired && role !== "examiner" && role !== "admin") return null;
+        <>
+          <div 
+            className="md:hidden fixed inset-0 z-[40] bg-background/40 backdrop-blur-[2px]" 
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="md:hidden fixed inset-y-0 left-0 w-[80%] max-w-sm z-50 bg-background/95 backdrop-blur-xl flex flex-col shadow-2xl border-r border-primary/20 transition-all duration-300">
+            <div className="p-4 flex justify-between items-center border-b border-border bg-card/60">
+              <Logo size="sm" />
+              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)} className="hover:bg-primary/10">
+                <X className="text-primary w-6 h-6" />
+              </Button>
+            </div>
+            <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+              <div className="font-mono-tac text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 mb-4 pl-2">
+                Operational Modules
+              </div>
+              {navItems.map((item) => {
+                const isExaminerRequired = item.path === "/scan";
+                if (isExaminerRequired && role !== "examiner" && role !== "admin") return null;
 
-              return (
-                <Link 
-                  key={item.name} 
-                  to={item.path} 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block"
-                >
-                  <div className={`flex items-center gap-4 px-4 py-4 rounded-md border border-border/50 ${
-                    location.pathname.startsWith(item.path) ? "bg-primary/10 text-primary border-primary/50" : "text-muted-foreground"
-                  }`}>
-                    <item.icon size={20} />
-                    <span className="font-sans font-bold text-sm uppercase tracking-widest">{item.name}</span>
-                  </div>
-                </Link>
-              );
-            })}
+                return (
+                  <Link 
+                    key={item.name} 
+                    to={item.path} 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block"
+                  >
+                    <div className={`flex items-center gap-4 px-4 py-4 rounded-md border border-border/50 ${
+                      location.pathname.startsWith(item.path) ? "bg-primary/10 text-primary border-primary/50 shadow-glow-gold" : "text-muted-foreground"
+                    }`}>
+                      <item.icon size={20} />
+                      <span className="font-sans font-bold text-sm uppercase tracking-widest">{item.name}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* MAIN CONTENT AREA */}

@@ -16,9 +16,9 @@ export const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
     <div className={`flex items-center gap-3 ${size === 'xl' ? 'flex-col justify-center text-center' : 'flex-row'}`}>
       <div className="relative">
         <img 
-          src="/assets/logo_ultra.png" 
+          src="/assets/caduceus_clean.png" 
           alt="Cadet Protocol Emblem" 
-          className={`${s.img} object-contain rounded-md drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]`}
+          className={`${s.img} object-contain drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]`}
         />
       </div>
       <div className="flex flex-col leading-none">
@@ -27,7 +27,7 @@ export const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
         </div>
         {showTagline && (
           <div className={`${s.tagline} font-sans font-bold uppercase tracking-[0.4em] text-primary/60 mt-0.5`}>
-            Strategic Medical Audit
+            STRATEGIC MEDICAL AUDIT
           </div>
         )}
       </div>

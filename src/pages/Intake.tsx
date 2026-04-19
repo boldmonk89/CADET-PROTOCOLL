@@ -100,7 +100,7 @@ export default function Intake() {
   const submit = async () => {
     const ok = await saveStep(4, true);
     if (ok) {
-      toast.success("PROFILE LOCKED");
+      toast.success("RECORD LOCKED. Profile shell created.");
       navigate("/dashboard");
     }
   };
@@ -122,7 +122,7 @@ export default function Intake() {
       <div className="container py-8 max-w-4xl">
         <div className="mb-8">
           <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3">
-            MODULE A : CANDIDATE INTAKE
+            CADET INTAKE
           </div>
           <h1 className="font-display text-3xl text-foreground mb-1">Pre-Assessment Profile</h1>
           <p className="text-sm text-muted-foreground">

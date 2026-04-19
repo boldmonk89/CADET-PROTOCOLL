@@ -16,20 +16,47 @@ export default function Landing() {
       {/* Premium Background Effects */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
       
-      {/* Massive Scroll-Targeted Logo Background */}
+      {/* 3D Holographic Icon Stack Background */}
       <motion.div 
         style={{ 
           scale: logoScale, 
           opacity: logoOpacity,
-          filter: logoBlur,
+          perspective: 1000,
         }}
-        className="fixed inset-0 flex items-center justify-center pointer-events-none z-0"
+        className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"
       >
-        <img 
-          src="/assets/logo_ultra.png" 
-          alt="" 
-          className="w-[80%] max-w-[800px] h-auto object-contain drop-shadow-[0_0_100px_rgba(212,175,55,0.15)]" 
-        />
+        <motion.div
+           style={{
+             rotateY: useTransform(scrollYProgress, [0, 0.4], [0, 45]),
+             rotateX: useTransform(scrollYProgress, [0, 0.4], [0, -15]),
+             transformStyle: "preserve-3d",
+           }}
+           className="relative w-full h-full flex items-center justify-center"
+        >
+          {/* Layer 1: Shield */}
+          <motion.div 
+            style={{ translateZ: -200, opacity: 0.1 }}
+            className="absolute"
+          >
+            <Shield size={600} className="text-primary stroke-[0.5]" />
+          </motion.div>
+
+          {/* Layer 2: Activity (Pulse) */}
+          <motion.div 
+            style={{ translateZ: 0 }}
+            className="absolute"
+          >
+            <Activity size={400} className="text-primary/40 stroke-[1] drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]" />
+          </motion.div>
+
+          {/* Layer 3: Inner Core */}
+          <motion.div 
+            style={{ translateZ: 200, opacity: 0.2 }}
+            className="absolute"
+          >
+             <div className="w-40 h-40 rounded-full border border-primary/30 blur-md animate-pulse" />
+          </motion.div>
+        </motion.div>
       </motion.div>
 
       <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/5 to-transparent blur-3xl pointer-events-none"></div>
@@ -59,7 +86,7 @@ export default function Landing() {
 
           <motion.h1 
             style={{ y: textY }}
-            className="font-display text-6xl md:text-8xl lg:text-[10rem] text-foreground mb-10 leading-[0.9] tracking-tighter"
+            className="font-display text-6xl md:text-8xl lg:text-[7rem] text-foreground mb-10 leading-[0.95] tracking-tighter"
           >
             Forged in <span className="font-display italic text-primary text-glow-gold font-light">Discipline.</span><br />
             Tested in <span className="font-display text-primary text-glow-gold">Field.</span>

@@ -69,7 +69,7 @@ export default function Hospitals() {
           viewport={{ once: true }}
           className="mb-8"
         >
-          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3">
+          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.2em] text-primary mb-3">
             MODULE D : HOSPITAL ROUTING
           </div>
           <h1 className="font-display text-4xl text-foreground mb-2 text-glow-gold">Command Hospital Referral</h1>
@@ -114,7 +114,7 @@ export default function Hospitals() {
         >
           <div className="flex-1 w-full space-y-2">
             <label className="font-sans font-bold text-[10px] uppercase tracking-widest text-primary/70">
-              Active Search Anchor {!coords && candidateCity && <span className="text-warning ml-2">// manual location mode</span>}
+              Active Search Anchor {!coords && candidateCity && <span className="text-warning ml-2">(manual location mode)</span>}
             </label>
             <Input
               value={candidateCity}
@@ -127,6 +127,19 @@ export default function Hospitals() {
             Distances computed via Haversine geometry from city centroids. No telemetry used.
           </div>
         </motion.div>
+
+        {!candidateCity && !candidateState && (
+          <div className="glass-panel p-12 text-center border-dashed border-primary/20 backdrop-blur-md">
+            <MapPin size={48} className="mx-auto text-primary/20 mb-4" />
+            <h3 className="font-display text-xl text-foreground mb-2">Regional Identity Pending</h3>
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
+              Finish your Cadet Intake to activate regional routing and find your nearest Command Hospital automatically.
+            </p>
+            <Button variant="liquid-glass" onClick={() => navigate("/intake")} className="uppercase tracking-widest text-[10px]">
+              Complete Intake
+            </Button>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {hospitals.map((h, i) => (

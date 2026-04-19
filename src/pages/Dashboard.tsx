@@ -58,7 +58,7 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3">
+          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.2em] text-primary mb-3">
             MISSION CONTROL
           </div>
           <h1 className="font-display text-4xl md:text-5xl text-foreground mb-1 tracking-tight">

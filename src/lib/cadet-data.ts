@@ -1,4 +1,4 @@
-// CADET PROTOCOL — Static reference data
+/* CADET PROTOCOL — Static reference data */
 
 export const ENTRY_SCHEMES = ["NDA", "CDS"] as const;
 export const TARGET_SERVICES = ["ARMY", "NAVY", "AIR_FORCE"] as const;
@@ -26,9 +26,13 @@ export const STATE_CITY_MAP: Record<string, string[]> = {
   "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik"],
   "Punjab": ["Ludhiana", "Amritsar", "Jalandhar"],
   "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur"],
-  "Uttar Pradesh": ["Lucknow", "Kanpur", "Agra", "Varanasi"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Agra", "Varanasi", "Ghaziabad", "Noida"],
   "West Bengal": ["Kolkata", "Siliguri", "Asansol"],
-  // Default fallback for other states
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
+  "Telangana": ["Hyderabad", "Warangal"],
+  "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior"],
+  "Kerala": ["Kochi", "Thiruvananthapuram"],
+  "Assam": ["Guwahati", "Dibrugarh"],
 };
 
 export const STATE_TO_COMMAND_MAP: Record<string, string> = {
@@ -173,6 +177,11 @@ export const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   guwahati: { lat: 26.1445, lng: 91.7362 },
   kochi: { lat: 9.9312, lng: 76.2673 },
   visakhapatnam: { lat: 17.6868, lng: 83.2185 },
+  ghaziabad: { lat: 28.6692, lng: 77.4538 },
+  noida: { lat: 28.5355, lng: 77.3910 },
+  coimbatore: { lat: 11.0168, lng: 76.9558 },
+  indore: { lat: 22.7196, lng: 75.8577 },
+  thiruvananthapuram: { lat: 8.5241, lng: 76.9366 },
 };
 
 export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
