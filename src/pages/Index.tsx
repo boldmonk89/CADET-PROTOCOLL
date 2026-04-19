@@ -7,8 +7,8 @@ import { Shield, Activity, FileCheck, MapPin, ArrowRight } from "lucide-react";
 export default function Landing() {
   const { scrollYProgress } = useScroll();
   const logoScale = useTransform(scrollYProgress, [0, 0.4], [1.8, 0.9]);
-  const logoOpacity = useTransform(scrollYProgress, [0, 0.1, 0.4], [0, 0.4, 0.1]);
-  const logoBlur = useTransform(scrollYProgress, [0, 0.2, 0.4], ["blur(30px)", "blur(0px)", "blur(10px)"]);
+  const logoOpacity = useTransform(scrollYProgress, [0, 0.4, 1], [0, 0.25, 0.12]);
+  const logoBlur = useTransform(scrollYProgress, [0, 0.2, 0.4], ["blur(30px)", "blur(0px)", "blur(2px)"]);
   const textY = useTransform(scrollYProgress, [0, 0.3], [0, -40]);
   const logoY = useTransform(scrollYProgress, [0, 1], [0, 200]);
 
@@ -39,7 +39,7 @@ export default function Landing() {
           <motion.img 
              src="/assets/caduceus_clean.png"
              alt=""
-             className="w-[80%] max-w-[800px] h-auto object-contain drop-shadow-[0_0_100px_rgba(212,175,55,0.35)]"
+             className="w-[80%] max-w-[800px] h-auto object-contain drop-shadow-[0_0_100px_rgba(212,175,55,0.35)] mix-blend-screen"
              style={{ translateZ: 0 }}
           />
           {/* Intense Depth Rings */}
