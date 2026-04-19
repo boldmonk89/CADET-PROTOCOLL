@@ -8,25 +8,14 @@ import { Shield, Activity, FileCheck, MapPin, ArrowRight } from "lucide-react";
 export default function Landing() {
   const { user } = useAuth();
   const { scrollYProgress } = useScroll();
-  const logoScale = useTransform(scrollYProgress, [0, 0.5], [1.5, 1]);
-  const logoOpacity = useTransform(scrollYProgress, [0, 0.4, 0.8, 1], [0, 0.45, 0.7, 0.8]);
-  const logoBlur = useTransform(scrollYProgress, [0, 0.2, 0.6, 1], ["blur(40px)", "blur(0px)", "blur(0px)", "blur(3px)"]);
-  const textY = useTransform(scrollYProgress, [0, 0.3], [0, -40]);
-  const logoY = useTransform(scrollYProgress, [0, 1], [0, 450]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden selection:bg-primary/30">
       {/* Premium Background Effects */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
       
-      {/* Cinematic Reveal Background Symbol */}
-      <motion.div 
-        style={{ 
-          scale: logoScale, 
-          opacity: logoOpacity,
-          filter: logoBlur,
-          y: logoY,
-        }}
+      {/* Static Background Symbol */}
+      <div 
         className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"
       >
         <motion.div className="relative flex items-center justify-center bg-black/80 rounded-full p-20 blur-3xl scale-125">
@@ -41,7 +30,7 @@ export default function Landing() {
             className="absolute w-[90vw] h-[90vw] max-w-[1100px] max-h-[1100px] rounded-full bg-primary/5 blur-[120px] -z-10"
           />
         </motion.div>
-      </motion.div>
+      </div>
 
       <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/5 to-transparent blur-3xl pointer-events-none"></div>
       
@@ -65,7 +54,6 @@ export default function Landing() {
           </div>
 
           <motion.h1 
-            style={{ y: textY }}
             className="font-display text-3xl sm:text-5xl md:text-7xl lg:text-8xl text-foreground mb-10 leading-tight tracking-tighter"
           >
             Forged in <span className="italic text-primary text-glow-gold font-light">Discipline.</span> Tested in <span className="text-primary text-glow-gold">Field.</span>
