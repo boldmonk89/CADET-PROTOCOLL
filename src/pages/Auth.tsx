@@ -85,19 +85,18 @@ export default function AuthPage() {
 
         <div className="glass-panel p-8 shadow-2xl border-primary/20 bg-card/60">
           <div className="text-center mb-8">
-            <h1 className="font-display text-3xl font-normal text-foreground tracking-wide mb-2">
-              {mode === "signup" ? "Initialise Profile" : "Command Access"}
+            <h1 className="font-display text-4xl font-bold text-foreground tracking-tight mb-2">
+              {mode === "signup" ? "Create Account" : "Welcome Back"}
             </h1>
-            <p className="font-command italic text-primary/80 text-[15px]">
-              {mode === "signup" ? "New Candidate Registration" : "Restore Live Session"}
+            <p className="font-sans text-muted-foreground text-sm font-medium">
+              {mode === "signup" ? "Register as a new candidate" : "Sign in to your dashboard"}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-3">
-              <Label htmlFor="email" className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-primary/50"></span>
-                Identifier // Email
+              <Label htmlFor="email" className="font-sans font-bold text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                Email Address
               </Label>
               <Input
                 id="email"
@@ -110,9 +109,8 @@ export default function AuthPage() {
               />
             </div>
             <div className="space-y-3">
-              <Label htmlFor="password" className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-primary/50"></span>
-                Authentication Key
+              <Label htmlFor="password" className="font-sans font-bold text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                Password
               </Label>
               <Input
                 id="password"
@@ -129,9 +127,9 @@ export default function AuthPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-sans font-bold uppercase tracking-[0.2em] text-xs h-12 shadow-glow-gold transition-all mt-4"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-sans font-bold uppercase tracking-widest text-xs h-12 shadow-glow-gold transition-all mt-4"
             >
-              {loading ? "PROCESSING" : mode === "signup" ? "INITIALISE" : "AUTHENTICATE"}
+              {loading ? "Please wait..." : mode === "signup" ? "Create Account" : "Sign In"}
             </Button>
           </form>
 
@@ -140,8 +138,8 @@ export default function AuthPage() {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-card/60 backdrop-blur-sm px-4 font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">
-                Alternative Entry
+              <span className="bg-card/60 backdrop-blur-sm px-4 font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground">
+                Or continue with
               </span>
             </div>
           </div>
@@ -159,7 +157,7 @@ export default function AuthPage() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            Continue securely with Google
+            Continue with Google
           </Button>
 
           <div className="mt-8 text-center border-t border-border pt-6">
@@ -167,7 +165,7 @@ export default function AuthPage() {
               onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
               className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-2"
             >
-              {mode === "signup" ? "Existing Clearance? Sign in" : "New Candidate? Register"}
+              {mode === "signup" ? "Already have an account? Sign in" : "Don't have an account? Register"}
             </button>
           </div>
         </div>
