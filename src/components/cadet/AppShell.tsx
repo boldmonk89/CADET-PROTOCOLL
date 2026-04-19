@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,7 +23,7 @@ interface AppShellProps {
 export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Close mobile menu on navigation
