@@ -65,7 +65,7 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
                   }`}
                 >
                   <item.icon size={18} className={isActive ? "text-primary" : "opacity-70"} />
-                  <span className={`font-mono-tac text-xs uppercase tracking-widest ${isActive ? "font-bold" : ""}`}>
+                  <span className={`font-sans text-xs uppercase tracking-widest ${isActive ? "font-bold text-primary" : "font-medium"}`}>
                     {item.name}
                   </span>
                 </div>
@@ -77,11 +77,11 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
         <div className="p-4 border-t border-border/50">
           <Button
             variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-red-400 hover:bg-red-500/10 font-mono-tac text-xs uppercase tracking-widest"
+            className="w-full justify-start text-muted-foreground hover:text-red-400 hover:bg-red-500/10 font-sans font-bold text-xs uppercase tracking-widest"
             onClick={handleSignOut}
           >
             <LogOut size={16} className="mr-3 opacity-70" />
-            Abort Session
+            Log Out
           </Button>
         </div>
       </aside>
@@ -132,9 +132,9 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
             <div className="hidden md:block">
               {candidateBadge && (
                 <div className="flex items-center gap-2">
-                   <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-glow-gold animate-pulse" />
-                   <span className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">
-                     Live Session Auth: <span className="text-primary">{user?.email}</span>
+                   <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                   <span className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                     Active Verification Session
                    </span>
                 </div>
               )}
@@ -142,11 +142,11 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
 
             {/* Candidate Badge Right Side */}
             {candidateBadge && (
-              <div className="flex items-center gap-4 border border-primary/20 bg-background/50 backdrop-blur-md px-4 py-2 rounded-full shadow-glow-gold">
-                <div className="font-mono-tac text-[10px] uppercase tracking-widest flex items-center gap-3">
-                  <span className="text-muted-foreground">ID //</span>
-                  <span className="text-primary font-bold">{candidateBadge.code || "PENDING"}</span>
-                  {candidateBadge.name && <span className="hidden sm:inline border-l border-primary/20 pl-3 ml-1 text-foreground">{candidateBadge.name}</span>}
+              <div className="flex items-center gap-4 bg-background/50 backdrop-blur-md px-5 py-2.5 rounded-sm border border-primary/10">
+                <div className="font-sans font-bold text-[10px] uppercase tracking-widest flex items-center gap-4">
+                  <span className="text-muted-foreground opacity-60">ID</span>
+                  <span className="text-primary tracking-tighter text-sm">{candidateBadge.code || "PENDING"}</span>
+                  {candidateBadge.name && <span className="hidden sm:inline border-l border-primary/10 pl-4 text-foreground/80">{candidateBadge.name}</span>}
                 </div>
               </div>
             )}
@@ -161,11 +161,11 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
           
           {/* Footer inside scrolling area */}
           <footer className="max-w-6xl mx-auto mt-auto py-6 border-t border-border/50 text-center md:text-left flex flex-col md:flex-row justify-between gap-4">
-             <div className="font-mono-tac text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-               Cadet Protocol © 2025–2028 | Restricted Area
+             <div className="font-sans font-bold text-[9px] uppercase tracking-[0.3em] text-muted-foreground/40">
+               Cadet Protocol 2025–2028
              </div>
-             <div className="font-mono-tac text-[10px] uppercase tracking-[0.2em] text-primary/50">
-               Authorised Personnel Only
+             <div className="font-sans font-bold text-[9px] uppercase tracking-[0.3em] text-primary/30">
+               Secure Environment
              </div>
           </footer>
         </div>

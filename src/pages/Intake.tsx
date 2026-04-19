@@ -102,8 +102,8 @@ export default function Intake() {
 
   if (authLoading || !loaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-mono-tac text-xs uppercase tracking-widest text-primary animate-breathe">
-        ■ LOADING //
+      <div className="min-h-screen flex items-center justify-center font-sans font-bold text-xs uppercase tracking-widest text-primary animate-breathe">
+        LOADING
       </div>
     );
   }
@@ -116,8 +116,8 @@ export default function Intake() {
     <AppShell>
       <div className="container py-8 max-w-4xl">
         <div className="mb-8">
-          <div className="font-mono-tac text-xs uppercase tracking-widest text-primary mb-2">
-            ■ MODULE A // CANDIDATE INTAKE
+          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3">
+            MODULE A : CANDIDATE INTAKE
           </div>
           <h1 className="font-display text-3xl text-foreground mb-1">Pre-Assessment Profile</h1>
           <p className="text-sm text-muted-foreground">
@@ -138,7 +138,7 @@ export default function Intake() {
                   : "border-muted"
               }`}
             >
-              <div className="flex items-center gap-2 font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">
+              <div className="flex items-center gap-2 font-sans font-bold text-[9px] uppercase tracking-widest text-muted-foreground">
                 <span className={step >= s.num ? "text-primary" : ""}>STEP {s.num}/4</span>
                 {step > s.num && <Check size={12} className="text-success" />}
               </div>
@@ -168,26 +168,28 @@ export default function Intake() {
             variant="outline"
             onClick={prev}
             disabled={step === 1 || saving}
-            className="border-primary/30 font-mono-tac uppercase text-xs tracking-widest"
+            className="border-primary/20 font-sans font-bold uppercase text-[10px] tracking-widest h-11"
           >
-            <ChevronLeft size={14} className="mr-1" /> Back
+            <ChevronLeft size={14} className="mr-2" /> Previous
           </Button>
 
           {step < 4 ? (
             <Button
               onClick={next}
               disabled={saving}
-              className="bg-gradient-gold text-primary-foreground font-mono-tac uppercase text-xs tracking-widest"
+              variant="liquid-glass"
+              className="font-sans font-bold uppercase text-[10px] tracking-widest h-11"
             >
-              Save & Continue <ChevronRight size={14} className="ml-1" />
+              Next Step <ChevronRight size={14} className="ml-2" />
             </Button>
           ) : (
             <Button
               onClick={submit}
               disabled={saving}
-              className="bg-gradient-gold text-primary-foreground font-mono-tac uppercase text-xs tracking-widest shadow-glow-gold"
+              variant="liquid-glass"
+              className="font-sans font-bold uppercase text-[11px] tracking-widest h-12 shadow-glow-gold"
             >
-              ■ LOCK PROFILE
+              COMPLETE PROFILE LOCK
             </Button>
           )}
         </div>
@@ -362,17 +364,17 @@ function Step4({ profile, update }: { profile: Profile; update: (p: Partial<Prof
 
 function SectionTitle({ num, title }: { num: string; title: string }) {
   return (
-    <div className="flex items-baseline gap-3 pb-3 border-b border-primary/15">
-      <span className="font-mono-tac text-xs uppercase tracking-widest text-primary">{num}</span>
-      <h2 className="font-display text-xl text-foreground">{title}</h2>
+    <div className="flex items-baseline gap-3 pb-3 border-b border-primary/5">
+      <span className="font-sans font-bold text-[10px] uppercase tracking-widest text-primary/60">{num}</span>
+      <h2 className="font-display text-2xl text-foreground font-bold">{title}</h2>
     </div>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">{label}</Label>
+    <div className="space-y-2">
+      <Label className="font-sans font-bold text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60">{label}</Label>
       {children}
     </div>
   );

@@ -62,13 +62,28 @@
   .glass-panel-strong {
     @apply bg-background/80 backdrop-blur-2xl border-b border-border shadow-xl;
   }
-  
-  .glass-panel::before {
+
+  .liquid-glass-ultra {
+    @apply bg-white/5 backdrop-blur-3xl border border-white/10 relative overflow-hidden transition-all duration-300;
+    box-shadow: 
+      0 8px 32px 0 rgba(0, 0, 0, 0.37),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  .liquid-glass-ultra::after {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+    top: -50%; left: -50%; right: -50%; bottom: -50%;
+    background: radial-gradient(circle at center, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .liquid-glass-ultra:hover {
+    @apply bg-white/10 border-white/20 scale-[1.02];
+    box-shadow: 
+      0 12px 40px 0 rgba(0, 0, 0, 0.45),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
 
   .text-glow-gold {
@@ -86,7 +101,7 @@
     background-size: 100% 4px;
     z-index: 50;
     pointer-events: none;
-    opacity: 0.3;
+    opacity: 0.1;
   }
 }
 

@@ -80,7 +80,9 @@ export default function AuthPage() {
         className="w-full max-w-md relative z-10"
       >
         <div className="flex justify-center mb-8">
-          <Logo size="lg" showTagline={false} />
+          <Link to="/">
+            <Logo size="lg" showTagline={false} />
+          </Link>
         </div>
 
         <div className="glass-panel p-8 shadow-2xl border-primary/20 bg-card/60">
@@ -127,7 +129,8 @@ export default function AuthPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-sans font-bold uppercase tracking-widest text-xs h-12 shadow-glow-gold transition-all mt-4"
+              variant="liquid-glass"
+              className="w-full font-sans font-bold uppercase tracking-widest text-xs h-12 shadow-glow-gold transition-all mt-4"
             >
               {loading ? "Please wait..." : mode === "signup" ? "Create Account" : "Sign In"}
             </Button>
@@ -167,6 +170,11 @@ export default function AuthPage() {
             >
               {mode === "signup" ? "Already have an account? Sign in" : "Don't have an account? Register"}
             </button>
+            <div className="mt-4 pt-4 border-t border-border/40">
+              <Link to="/" className="font-sans font-bold text-[10px] uppercase tracking-widest text-primary hover:text-primary/80 transition-colors">
+                Return to Home
+              </Link>
+            </div>
           </div>
         </div>
 

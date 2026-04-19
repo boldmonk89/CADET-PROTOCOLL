@@ -123,12 +123,12 @@ export default function ScanConsole() {
     } : null}>
       <div className="container py-8">
         <div className="mb-6">
-          <div className="font-sans font-bold text-xs uppercase tracking-widest text-primary mb-2">
-            MODULE C // BIOMETRIC SCAN CONSOLE
+          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3 text-center">
+            MODULE C : BIOMETRIC ASSESSMENT
           </div>
-          <h1 className="font-display text-4xl text-foreground mb-1 tracking-tight">Assessment Theatre</h1>
-          <p className="text-sm text-muted-foreground font-light">
-            Real-time biometric assessment active. Secure analytical data link established.
+          <h1 className="font-display text-4xl md:text-5xl text-foreground mb-2 text-center tracking-tight">Assessment Theatre</h1>
+          <p className="text-center text-sm text-muted-foreground font-medium max-w-lg mx-auto">
+            Real-time biometric analysis active. Establish coordinate lock for parameter capture.
           </p>
         </div>
 
@@ -284,7 +284,8 @@ export default function ScanConsole() {
               <Button
                 onClick={submitResult}
                 disabled={submitting}
-                className="w-full mt-6 bg-primary text-primary-foreground hover:bg-primary/90 font-sans font-bold uppercase text-[11px] tracking-[0.2em] h-12 shadow-glow-gold"
+                variant="liquid-glass"
+                className="w-full mt-6 font-sans font-bold uppercase text-[11px] tracking-[0.2em] h-12 shadow-glow-gold"
               >
                 AUTHORISE AND RECORD RESULT
               </Button>

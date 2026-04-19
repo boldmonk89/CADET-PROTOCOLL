@@ -56,8 +56,8 @@ export default function Hospitals() {
     } : null}>
       <div className="container py-8">
         <div className="mb-6">
-          <div className="font-mono-tac text-xs uppercase tracking-widest text-primary mb-2">
-            ■ MODULE D // HOSPITAL ROUTING
+          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3">
+            MODULE D : HOSPITAL ROUTING
           </div>
           <h1 className="font-display text-3xl text-foreground mb-1">Command Hospital Referral</h1>
           <p className="text-sm text-muted-foreground max-w-2xl">
@@ -73,15 +73,15 @@ export default function Hospitals() {
             animate={{ opacity: 1, y: 0 }}
             className="glass-panel-strong border-l-4 border-warning p-4 mb-6"
           >
-            <div className="font-mono-tac text-xs uppercase tracking-widest text-warning mb-1">
-              ⚠ {results.length} ASSESSMENT FLAG{results.length > 1 ? "S" : ""}
+            <div className="font-sans font-bold text-[10px] uppercase tracking-widest text-warning mb-1">
+              {results.length} ASSESSMENT FLAG{results.length > 1 ? "S" : ""}
             </div>
-            <div className="text-sm text-foreground/90">
+            <div className="text-sm text-foreground/90 font-medium">
               We recommend specialist review before your SSB / medical board date.
             </div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="mt-3 flex flex-wrap gap-2">
               {results.slice(0, 6).map((r) => (
-                <span key={r.id} className="text-[10px] font-mono-tac uppercase tracking-widest px-2 py-0.5 border border-warning/40 text-warning rounded-sm">
+                <span key={r.id} className="text-[9px] font-sans font-bold uppercase tracking-wider px-2 py-0.5 border border-warning/30 text-warning bg-warning/5 rounded-sm">
                   {r.parameter} · {r.status}
                 </span>
               ))}
@@ -138,12 +138,12 @@ function HospitalCard({ hospital }: { hospital: any }) {
 
   return (
     <div className="glass-panel p-5 h-full flex flex-col">
-      <div className="flex items-start justify-between mb-3">
-        <span className={`text-[10px] font-mono-tac uppercase tracking-widest px-2 py-0.5 border rounded-sm ${serviceColor[hospital.service]}`}>
+      <div className="flex items-start justify-between mb-4">
+        <span className={`text-[9px] font-sans font-bold uppercase tracking-wider px-2 py-1 border rounded-sm ${serviceColor[hospital.service]}`}>
           {hospital.service.replace("_", " ")}
         </span>
         {hospital.distance != null && (
-          <span className="text-xs font-mono-tac text-primary">~{hospital.distance} km</span>
+          <span className="text-xs font-sans font-bold text-primary tracking-tighter">~{hospital.distance} KM</span>
         )}
       </div>
 
@@ -162,8 +162,8 @@ function HospitalCard({ hospital }: { hospital: any }) {
 
       <div className="flex gap-2 mt-4 pt-4 border-t border-border/40">
         <a href={mapsUrl} target="_blank" rel="noreferrer" className="flex-1">
-          <Button size="sm" variant="outline" className="w-full border-primary/40 hover:bg-primary/10 font-mono-tac uppercase text-[10px] tracking-widest">
-            <Navigation size={11} className="mr-1.5" /> Directions
+          <Button size="sm" variant="liquid-glass" className="w-full font-sans font-bold uppercase text-[10px] tracking-widest h-10">
+            <Navigation size={11} className="mr-2" /> Directions
           </Button>
         </a>
         {hospital.phone ? (

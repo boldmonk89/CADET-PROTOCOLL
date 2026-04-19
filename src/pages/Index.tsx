@@ -29,8 +29,8 @@ export default function Landing() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 border border-primary/20 rounded-full bg-card/50 backdrop-blur-sm shadow-glow-gold">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="font-mono-tac text-[10px] uppercase tracking-[0.25em] text-primary">
-              Executive Medical Intake & Audit System
+            <span className="font-sans font-bold text-[10px] uppercase tracking-[0.25em] text-primary">
+              Medical Intake & Audit System
             </span>
           </div>
 
@@ -51,7 +51,8 @@ export default function Landing() {
             <Link to="/auth">
               <Button
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-sans font-bold uppercase tracking-widest text-xs h-14 px-10 shadow-glow-gold transition-all duration-300 hover:scale-[1.02]"
+                variant="liquid-glass"
+                className="font-sans font-bold uppercase tracking-widest text-[11px] h-14 px-12 shadow-glow-gold transition-all duration-300 hover:scale-[1.05]"
               >
                 Commence Audit <ArrowRight size={14} className="ml-2" />
               </Button>
@@ -59,8 +60,8 @@ export default function Landing() {
             <Link to="/auth">
               <Button
                 size="lg"
-                variant="outline"
-                className="border-primary/30 hover:border-primary/60 hover:bg-primary/5 text-foreground font-mono-tac uppercase tracking-widest text-xs h-14 px-10 transition-all duration-300"
+                variant="ghost"
+                className="hover:bg-primary/5 text-foreground font-sans font-bold uppercase tracking-widest text-[11px] h-14 px-12 transition-all duration-300"
               >
                 Returning Candidate
               </Button>
@@ -70,8 +71,8 @@ export default function Landing() {
 
       </section>
 
-      <footer className="container py-8 border-t border-border/20 text-center text-[10px] font-mono-tac uppercase tracking-[0.2em] text-muted-foreground relative z-10 bg-background/80">
-        CADET PROTOCOL © 2025–2028 | RESTRICTED — AUTHORISED PERSONNEL ONLY
+      <footer className="container py-8 border-t border-border/20 text-center text-[9px] font-sans font-bold uppercase tracking-[0.4em] text-muted-foreground/40 relative z-10 bg-background/80">
+        CADET PROTOCOL 2025–2028 | SECURE ENVIRONMENT
       </footer>
     </div>
   );

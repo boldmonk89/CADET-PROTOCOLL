@@ -58,8 +58,8 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="font-sans font-bold text-xs uppercase tracking-widest text-primary mb-2">
-            MISSION CONTROL // {role?.toUpperCase()}
+          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3">
+            MISSION CONTROL
           </div>
           <h1 className="font-display text-4xl md:text-5xl text-foreground mb-1 tracking-tight">
             {profile?.full_name ? `Welcome, ${profile.full_name.split(" ")[0]}` : "Welcome, Cadet"}
@@ -171,8 +171,8 @@ export default function Dashboard() {
 function Kpi({ label, value, variant = "default" }: { label: string; value: any; variant?: "default" | "warning" }) {
   return (
     <div className="glass-panel p-5 border-primary/5">
-      <div className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground/60">{label}</div>
-      <div className={`font-display text-3xl mt-2 ${variant === "warning" ? "text-warning" : "text-primary text-glow-gold"}`}>
+      <div className="font-sans font-bold text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60">{label}</div>
+      <div className={`font-display text-4xl mt-2 ${variant === "warning" ? "text-warning" : "text-primary tracking-tighter"}`}>
         {value}
       </div>
     </div>
@@ -194,8 +194,8 @@ function ModuleCard({
       <Link to={active ? to : "#"}>
         <Button 
           disabled={!active}
-          variant={active ? "outline" : "ghost"} 
-          className="w-full border-primary/10 hover:border-primary/30 hover:bg-primary/5 font-sans font-bold uppercase text-[10px] tracking-widest h-10"
+          variant={active ? "liquid-glass" : "ghost"} 
+          className="w-full font-sans font-bold uppercase text-[10px] tracking-widest h-11"
         >
           {active ? cta : "LOCKED"}
         </Button>
