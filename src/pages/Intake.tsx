@@ -99,7 +99,34 @@ export default function Intake() {
     return true;
   };
 
+  const isStepValid = () => {
+    switch (step) {
+      case 1:
+        return (
+          !!profile.full_name &&
+          !!profile.date_of_birth &&
+          !!profile.gender &&
+          !!profile.entry_scheme &&
+          !!profile.target_service &&
+          !!profile.state &&
+          !!profile.city
+        );
+      case 2:
+        return (
+          !!profile.height_cm &&
+          !!profile.weight_kg &&
+          !!profile.blood_group
+        );
+      default:
+        return true;
+    }
+  };
+
   const next = async () => {
+    if (!isStepValid()) {
+      toast.error("MISSING MANDATORY INTEL: Complete all required fields to proceed.");
+      return;
+    }
     const ok = await saveStep(step + 1);
     if (ok) setStep(step + 1);
   };
@@ -198,7 +225,13 @@ export default function Intake() {
             </Button>
           ) : (
             <Button
-              onClick={submit}
+              onClick={() => {
+                if (!isStepValid()) {
+                  toast.error("INCOMPLETE PROFILE: Detailed biometrics required for final lock.");
+                  return;
+                }
+                submit();
+              }}
               disabled={saving}
               variant="liquid-glass"
               className="font-sans font-bold uppercase text-[11px] tracking-widest h-12 shadow-glow-gold"

@@ -29,11 +29,11 @@ export default function Landing() {
         }}
         className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"
       >
-        <motion.div className="relative flex items-center justify-center">
+        <motion.div className="relative flex items-center justify-center bg-black/80 rounded-full p-20 blur-3xl scale-125">
           <motion.img 
              src="/assets/caduceus_solo.png"
              alt=""
-             className="w-[85%] max-w-[900px] h-auto object-contain drop-shadow-[0_0_120px_rgba(212,175,55,0.3)] mix-blend-screen brightness-125"
+             className="w-[85%] max-w-[900px] h-auto object-contain drop-shadow-[0_0_80px_rgba(180,150,60,0.2)] mix-blend-screen brightness-110"
              style={{ translateZ: 0 }}
           />
           {/* Subtle Glow Ring */}
@@ -66,7 +66,7 @@ export default function Landing() {
 
           <motion.h1 
             style={{ y: textY }}
-            className="font-display text-5xl md:text-7xl lg:text-8xl text-foreground mb-10 leading-tight tracking-tighter"
+            className="font-display text-3xl sm:text-5xl md:text-7xl lg:text-8xl text-foreground mb-10 leading-tight tracking-tighter"
           >
             Forged in <span className="italic text-primary text-glow-gold font-light">Discipline.</span> Tested in <span className="text-primary text-glow-gold">Field.</span>
           </motion.h1>

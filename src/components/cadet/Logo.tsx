@@ -5,10 +5,10 @@ interface LogoProps {
 
 export const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
   const sizes = {
-    sm: { container: "h-8", img: "h-8 w-auto px-1", font: "text-sm", tagline: "text-[6px]" },
-    md: { container: "h-14", img: "h-14 w-auto", font: "text-lg", tagline: "text-[7px]" },
-    lg: { container: "h-24", img: "h-24 w-auto drop-shadow-xl", font: "text-2xl", tagline: "text-[9px]" },
-    xl: { container: "h-40", img: "h-40 w-auto shadow-glow-gold", font: "text-4xl", tagline: "text-xs" },
+    sm: { container: "h-6 md:h-8", img: "h-6 md:h-8 w-auto px-1", font: "text-xs md:text-sm", tagline: "text-[5px] md:text-[6px]" },
+    md: { container: "h-10 md:h-14", img: "h-10 md:h-14 w-auto", font: "text-base md:text-lg", tagline: "text-[6px] md:text-[7px]" },
+    lg: { container: "h-16 md:h-24", img: "h-16 md:h-24 w-auto drop-shadow-xl", font: "text-xl md:text-2xl", tagline: "text-[8px] md:text-[9px]" },
+    xl: { container: "h-28 md:h-40", img: "h-28 md:h-40 w-auto shadow-sm", font: "text-2xl md:text-4xl", tagline: "text-[10px] md:text-xs" },
   };
   const s = sizes[size];
 
