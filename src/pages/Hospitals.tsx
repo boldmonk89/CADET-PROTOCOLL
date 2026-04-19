@@ -42,14 +42,15 @@ export default function Hospitals() {
       .map((h) => ({ 
         ...h, 
         distance: coords ? distanceKm(coords, { lat: h.lat, lng: h.lng }) : null,
-        isRecommended: h.name === recommendedNode
+        isRecommended: recommendedNode && h.name.toLowerCase().includes(recommendedNode.toLowerCase().split("(")[0].trim().toLowerCase())
       }))
       .sort((a, b) => {
-        if (a.isRecommended) return -1;
-        if (b.isRecommended) return 1;
-        if (a.distance == null) return 1;
-        if (b.distance == null) return -1;
-        return a.distance - b.distance;
+        if (a.isRecommended && !b.isRecommended) return -1;
+        if (!a.isRecommended && b.isRecommended) return 1;
+        if (a.distance !== null && b.distance !== null) return a.distance - b.distance;
+        if (a.distance !== null) return -1;
+        if (b.distance !== null) return 1;
+        return 0;
       });
   }, [coords, recommendedNode]);
 

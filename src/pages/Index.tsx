@@ -16,7 +16,7 @@ export default function Landing() {
       {/* Premium Background Effects */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
       
-      {/* 3D Holographic Icon Stack Background */}
+      {/* 3D Holographic Scroll-Reveal Symbol */}
       <motion.div 
         style={{ 
           scale: logoScale, 
@@ -27,35 +27,23 @@ export default function Landing() {
       >
         <motion.div
            style={{
-             rotateY: useTransform(scrollYProgress, [0, 0.4], [0, 45]),
-             rotateX: useTransform(scrollYProgress, [0, 0.4], [0, -15]),
+             rotateY: useTransform(scrollYProgress, [0, 0.4], [0, 35]),
+             rotateX: useTransform(scrollYProgress, [0, 0.4], [0, -10]),
              transformStyle: "preserve-3d",
            }}
-           className="relative w-full h-full flex items-center justify-center"
+           className="relative flex items-center justify-center"
         >
-          {/* Layer 1: Shield */}
+          <motion.img 
+             src="/assets/caduceus_clean.png"
+             alt=""
+             className="w-[70%] max-w-[700px] h-auto object-contain drop-shadow-[0_0_80px_rgba(212,175,55,0.25)]"
+             style={{ translateZ: 0 }}
+          />
+          {/* Subtle Glow Ring */}
           <motion.div 
-            style={{ translateZ: -200, opacity: 0.1 }}
-            className="absolute"
-          >
-            <Shield size={600} className="text-primary stroke-[0.5]" />
-          </motion.div>
-
-          {/* Layer 2: Activity (Pulse) */}
-          <motion.div 
-            style={{ translateZ: 0 }}
-            className="absolute"
-          >
-            <Activity size={400} className="text-primary/40 stroke-[1] drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]" />
-          </motion.div>
-
-          {/* Layer 3: Inner Core */}
-          <motion.div 
-            style={{ translateZ: 200, opacity: 0.2 }}
-            className="absolute"
-          >
-             <div className="w-40 h-40 rounded-full border border-primary/30 blur-md animate-pulse" />
-          </motion.div>
+            style={{ translateZ: -100, opacity: 0.1 }}
+            className="absolute w-[80vw] h-[80vw] max-w-[900px] max-h-[900px] rounded-full border border-primary/20 blur-2xl"
+          />
         </motion.div>
       </motion.div>
 
@@ -86,10 +74,9 @@ export default function Landing() {
 
           <motion.h1 
             style={{ y: textY }}
-            className="font-display text-6xl md:text-8xl lg:text-[7rem] text-foreground mb-10 leading-[0.95] tracking-tighter"
+            className="font-display text-5xl md:text-7xl lg:text-8xl text-foreground mb-10 leading-tight tracking-tighter"
           >
-            Forged in <span className="font-display italic text-primary text-glow-gold font-light">Discipline.</span><br />
-            Tested in <span className="font-display text-primary text-glow-gold">Field.</span>
+            Forged in <span className="italic text-primary text-glow-gold font-light">Discipline.</span> Tested in <span className="text-primary text-glow-gold">Field.</span>
           </motion.h1>
 
           <p className="font-command italic text-lg md:text-xl text-primary/80 max-w-2xl mx-auto mb-4 tracking-wide">

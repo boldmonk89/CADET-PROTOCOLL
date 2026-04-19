@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,15 +74,23 @@ export default function Intake() {
   const saveStep = async (nextStep: number, completed = false) => {
     if (!user) return;
     setSaving(true);
+    
+    // Omit auto-generated fields to prevent UPSERT conflicts
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, created_at, updated_at, user_id: _, ...saveData } = profile as any;
+    
     const payload: any = {
-      ...profile,
+      ...saveData,
       user_id: user.id,
       intake_step: nextStep,
     };
+    
     if (completed) payload.intake_completed_at = new Date().toISOString();
+    
     const { error } = await supabase
       .from("candidate_profiles")
       .upsert(payload, { onConflict: "user_id" });
+      
     setSaving(false);
     if (error) {
       toast.error(error.message);

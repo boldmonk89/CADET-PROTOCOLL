@@ -147,15 +147,16 @@ export interface CommandHospital {
 }
 
 export const COMMAND_HOSPITALS: CommandHospital[] = [
-  { name: "Command Hospital (Northern Command)", city: "Udhampur", state: "J&K", service: "ARMY", phone: "+91-1992-242000", specialities: ["Orthopaedics", "General Medicine"], lat: 32.9159, lng: 75.1416 },
-  { name: "Command Hospital (Western Command)", city: "Chandigarh", state: "Chandigarh", service: "ARMY", phone: "+91-172-2740545", specialities: ["Orthopaedics", "Cardiology", "Vision"], lat: 30.7333, lng: 76.7794 },
-  { name: "Command Hospital (Central Command)", city: "Lucknow", state: "UP", service: "ARMY", phone: "+91-522-2483120", specialities: ["Cardiology", "Orthopaedics", "ENT"], lat: 26.8467, lng: 80.9462 },
-  { name: "Command Hospital (Eastern Command)", city: "Kolkata", state: "WB", service: "ARMY", phone: "+91-33-25690000", specialities: ["General Medicine", "Orthopaedics"], lat: 22.5726, lng: 88.3639 },
-  { name: "Command Hospital (Southern Command)", city: "Pune", state: "MH", service: "ARMY", phone: "+91-20-26306000", specialities: ["Orthopaedics", "Cardiology", "Vision"], lat: 18.5204, lng: 73.8567 },
-  { name: "Command Hospital Air Force", city: "Bangalore", state: "KA", service: "AIR_FORCE", phone: "+91-80-25224436", specialities: ["Aviation Medicine", "Vision", "ENT"], lat: 12.9716, lng: 77.5946 },
-  { name: "INHS Asvini", city: "Mumbai", state: "MH", service: "NAVY", phone: "+91-22-22151031", specialities: ["Maritime Medicine", "Cardiology"], lat: 19.0760, lng: 72.8777 },
-  { name: "INHS Kalyani", city: "Visakhapatnam", state: "AP", service: "NAVY", phone: "+91-891-2812345", specialities: ["Maritime Medicine", "ENT"], lat: 17.6868, lng: 83.2185 },
-  { name: "Army Hospital (Research & Referral)", city: "New Delhi", state: "Delhi", service: "ARMY", phone: "+91-11-23093020", specialities: ["All specialities", "Tertiary care"], lat: 28.6139, lng: 77.2090 },
+  { name: "Army Hospital (Research & Referral)", city: "New Delhi", state: "Delhi", service: "ARMY", phone: "+91-11-23338181", specialities: ["Tertiary Care", "All Specialities", "Oncology"], lat: 28.5954, lng: 77.1654 },
+  { name: "Command Hospital (Air Force)", city: "Bangalore", state: "Karnataka", service: "AIR_FORCE", phone: "+91-80-25224436", specialities: ["Aviation Medicine", "Vision", "ENT"], lat: 12.9716, lng: 77.5946 },
+  { name: "Command Hospital (Western Command)", city: "Chandimandir", state: "Haryana", service: "ARMY", phone: "+91-172-2589901", specialities: ["Orthopaedics", "Cardiology", "ENT"], lat: 30.7303, lng: 76.9042 },
+  { name: "Command Hospital (Central Command)", city: "Lucknow", state: "Uttar Pradesh", service: "ARMY", phone: "+91-522-2292350", specialities: ["General Surgery", "Medicine", "Vision"], lat: 26.8467, lng: 80.9462 },
+  { name: "Command Hospital (Eastern Command)", city: "Kolkata", state: "West Bengal", service: "ARMY", phone: "+91-33-22221300", specialities: ["Specialist referral", "Trauma Care"], lat: 22.5726, lng: 88.3639 },
+  { name: "Command Hospital (Southern Command)", city: "Pune", state: "Maharashtra", service: "ARMY", phone: "+91-20-26306000", specialities: ["Orthopaedics", "Burn Specialist", "Cardio"], lat: 18.5204, lng: 73.8567 },
+  { name: "Command Hospital (Northern Command)", city: "Udhampur", state: "Jammu and Kashmir", service: "ARMY", phone: "+91-1992-242000", specialities: ["Mountain Medicine", "Ortho"], lat: 32.9159, lng: 75.1416 },
+  { name: "INHS Asvini (Navy)", city: "Mumbai", state: "Maharashtra", service: "NAVY", phone: "+91-22-22151031", specialities: ["Maritime Medicine", "Vision", "Navy Ops"], lat: 18.9169, lng: 72.8227 },
+  { name: "INHS Kalyani", city: "Visakhapatnam", state: "Andhra Pradesh", service: "NAVY", phone: "+91-891-2812345", specialities: ["General Care", "Sea Sickness Specialist"], lat: 17.6868, lng: 83.2185 },
+  { name: "Base Hospital Delhi Cantt", city: "New Delhi", state: "Delhi", service: "ARMY", phone: "+91-11-25683412", specialities: ["General Review", "Psychology"], lat: 28.5962, lng: 77.1425 },
 ];
 
 // Approximate city coordinates for distance calculation (city-level, not GPS)
