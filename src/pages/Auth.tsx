@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Check, Circle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AuthPage() {
@@ -17,6 +17,17 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Real-time password validation
+  const rules = {
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    lower: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  };
+  const isPasswordValid = Object.values(rules).every(Boolean);
+
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -145,11 +156,24 @@ export default function AuthPage() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+
+              {mode === "signup" && password.length > 0 && (
+                <div className="bg-background/30 rounded-lg p-4 border border-primary/10 space-y-2 mt-2 animate-in fade-in slide-in-from-top-2">
+                  <p className="font-mono-tac text-[9px] uppercase tracking-widest text-muted-foreground/60 mb-2">Security Requirements</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <PasswordRule label="Min 8 Characters" met={rules.length} />
+                    <PasswordRule label="Uppercase (A-Z)" met={rules.upper} />
+                    <PasswordRule label="Lowercase (a-z)" met={rules.lower} />
+                    <PasswordRule label="Number (0-9)" met={rules.number} />
+                    <PasswordRule label="Special Char (@#$)" met={rules.special} />
+                  </div>
+                </div>
+              )}
             </div>
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || (mode === "signup" && !isPasswordValid)}
               variant="liquid-glass"
               className="w-full font-sans font-bold uppercase tracking-widest text-xs h-12 shadow-glow-gold transition-all mt-4"
             >
@@ -203,6 +227,14 @@ export default function AuthPage() {
           RESTRICTED — AUTHORISED PERSONNEL ONLY
         </p>
       </motion.div>
+    </div>
+  );
+}
+function PasswordRule({ label, met }: { label: string; met: boolean }) {
+  return (
+    <div className={`flex items-center gap-2 transition-colors ${met ? "text-success/80" : "text-muted-foreground/40"}`}>
+      {met ? <Check size={12} className="shrink-0" /> : <Circle size={10} className="shrink-0" />}
+      <span className="font-sans font-bold text-[9px] uppercase tracking-wider">{label}</span>
     </div>
   );
 }
