@@ -1,10 +1,19 @@
-import { ReactNode } from "react";
-import { Logo } from "./Logo";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { ReactNode, useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Logo } from "./Logo";
+import {
+  LayoutDashboard,
+  UserPlus,
+  Activity,
+  MapPin,
+  LogOut,
+  Menu,
+  X,
+  CreditCard
+} from "lucide-react";
 
 interface AppShellProps {
   children: ReactNode;
@@ -13,55 +22,154 @@ interface AppShellProps {
 
 export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
   };
 
+  const navItems = [
+    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+    { name: "Intake", path: "/intake", icon: UserPlus },
+    { name: "Scans", path: "/scan", icon: Activity },
+    { name: "Hospitals", path: "/hospitals", icon: MapPin },
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 glass-panel-strong border-b border-primary/30">
-        <div className="container flex items-center justify-between h-16">
+    <div className="flex h-screen bg-background overflow-hidden selection:bg-primary/20">
+      
+      {/* SIDEBAR (Desktop) */}
+      <aside className="hidden md:flex flex-col w-72 border-r border-border bg-card shadow-2xl z-20">
+        <div className="p-6 border-b border-border/50">
           <Link to="/">
             <Logo size="sm" />
           </Link>
-          <div className="flex items-center gap-3">
-            {user && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-muted-foreground hover:text-primary"
+        </div>
+        
+        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+          <div className="font-mono-tac text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-4 pl-2">
+            Command Modules
+          </div>
+          {navItems.map((item) => {
+            const isActive = location.pathname.startsWith(item.path);
+            return (
+              <Link key={item.name} to={item.path}>
+                <div
+                  className={`flex items-center gap-4 px-4 py-3 rounded-md transition-all duration-300 ${
+                    isActive 
+                      ? "bg-primary/10 border-l-2 border-primary text-primary shadow-glow-gold" 
+                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                  }`}
+                >
+                  <item.icon size={18} className={isActive ? "text-primary" : "opacity-70"} />
+                  <span className={`font-mono-tac text-xs uppercase tracking-widest ${isActive ? "font-bold" : ""}`}>
+                    {item.name}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="p-4 border-t border-border/50">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-muted-foreground hover:text-red-400 hover:bg-red-500/10 font-mono-tac text-xs uppercase tracking-widest"
+            onClick={handleSignOut}
+          >
+            <LogOut size={16} className="mr-3 opacity-70" />
+            Abort Session
+          </Button>
+        </div>
+      </aside>
+
+      {/* MOBILE MENU VERLAY */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex flex-col">
+          <div className="p-4 flex justify-between items-center border-b border-border">
+            <Logo size="sm" />
+            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
+              <X className="text-primary" />
+            </Button>
+          </div>
+          <div className="flex-1 p-6 space-y-4">
+            {navItems.map((item) => (
+              <Link 
+                key={item.name} 
+                to={item.path} 
+                onClick={() => setMobileMenuOpen(false)}
+                className="block"
               >
-                <LogOut size={14} className="mr-2" />
-                <span className="font-mono-tac text-xs uppercase">Sign Out</span>
-              </Button>
+                <div className={`flex items-center gap-4 px-4 py-4 rounded-md border border-border/50 ${
+                  location.pathname.startsWith(item.path) ? "bg-primary/10 text-primary border-primary/50" : "text-muted-foreground"
+                }`}>
+                  <item.icon size={20} />
+                  <span className="font-mono-tac text-sm uppercase tracking-widest">{item.name}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <div className="scanline"></div>
+        
+        {/* TOP BAR */}
+        <header className="h-[72px] flex-shrink-0 border-b border-border bg-card/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 z-10 sticky top-0">
+          <div className="flex items-center gap-4 md:hidden">
+            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(true)}>
+              <Menu className="text-primary" />
+            </Button>
+          </div>
+          
+          <div className="flex-1 flex items-center justify-end md:justify-between">
+            {/* Left side empty on Desktop, but we can put breadcrumbs here later */}
+            <div className="hidden md:block">
+              {candidateBadge && (
+                <div className="flex items-center gap-2">
+                   <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-glow-gold animate-pulse" />
+                   <span className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">
+                     Live Session Auth: <span className="text-primary">{user?.email}</span>
+                   </span>
+                </div>
+              )}
+            </div>
+
+            {/* Candidate Badge Right Side */}
+            {candidateBadge && (
+              <div className="flex items-center gap-4 border border-primary/20 bg-background/50 backdrop-blur-md px-4 py-2 rounded-full shadow-glow-gold">
+                <div className="font-mono-tac text-[10px] uppercase tracking-widest flex items-center gap-3">
+                  <span className="text-muted-foreground">ID //</span>
+                  <span className="text-primary font-bold">{candidateBadge.code || "PENDING"}</span>
+                  {candidateBadge.name && <span className="hidden sm:inline border-l border-primary/20 pl-3 ml-1 text-foreground">{candidateBadge.name}</span>}
+                </div>
+              </div>
             )}
           </div>
-        </div>
-        {candidateBadge && (
-          <div className="border-t border-primary/15 bg-background/40">
-            <div className="container py-2 flex flex-wrap items-center gap-x-6 gap-y-1 text-xs font-mono-tac uppercase">
-              <span className="text-muted-foreground">CANDIDATE //</span>
-              <span className="text-primary">{candidateBadge.code || "—"}</span>
-              {candidateBadge.name && <span>{candidateBadge.name}</span>}
-              {candidateBadge.scheme && <span className="text-muted-foreground">SCHEME: <span className="text-foreground">{candidateBadge.scheme}</span></span>}
-              {candidateBadge.service && <span className="text-muted-foreground">SERVICE: <span className="text-foreground">{candidateBadge.service}</span></span>}
-            </div>
+        </header>
+
+        {/* PAGE CONTENT */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 scroll-smooth">
+          <div className="max-w-6xl mx-auto pb-12">
+            {children}
           </div>
-        )}
-      </header>
-
-      <main className="flex-1">{children}</main>
-
-      <footer className="border-t border-primary/15 mt-12">
-        <div className="container py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
-          <span>CADET PROTOCOL © 2025–2028 | RESTRICTED</span>
-          <span>AUTHORISED PERSONNEL ONLY</span>
+          
+          {/* Footer inside scrolling area */}
+          <footer className="max-w-6xl mx-auto mt-auto py-6 border-t border-border/50 text-center md:text-left flex flex-col md:flex-row justify-between gap-4">
+             <div className="font-mono-tac text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+               Cadet Protocol © 2025–2028 | Restricted Area
+             </div>
+             <div className="font-mono-tac text-[10px] uppercase tracking-[0.2em] text-primary/50">
+               Authorised Personnel Only
+             </div>
+          </footer>
         </div>
-      </footer>
+      </main>
     </div>
   );
 };

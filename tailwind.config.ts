@@ -63,25 +63,25 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         tactical: {
-          100: "#1a1c1a",
-          200: "#222522",
-          300: "#2c302c",
-          400: "#495048",
-          800: "#8e9b89",
+          100: "#0A0B0E",
+          200: "#101216",
+          300: "#1A1D24",
+          400: "#2B2E38",
+          800: "#8B95A5",
         },
         success: {
-          DEFAULT: "#00FF9D", // Bright military neon green
+          DEFAULT: "#D4AF37", // Replacing neon green with Gold for "Success" standard.
           foreground: "#000000",
         },
         caution: {
-          DEFAULT: "#FFB000", // Bright warning yellow
+          DEFAULT: "#C5A059", // Deep gold/ochre
           foreground: "#000000",
         },
       },
       borderRadius: {
-        lg: "0", // Tactical sharp edges instead of rounded
-        md: "0",
-        sm: "0",
+        lg: "0.5rem",    // Soft premium luxury bends instead of sharp corners
+        md: "0.375rem",
+        sm: "0.25rem",
       },
       fontFamily: {
         display: ["'Playfair Display'", "serif"],

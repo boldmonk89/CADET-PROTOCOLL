@@ -4,37 +4,37 @@
 
 @layer base {
   :root {
-    --background: 140 10% 4%; /* Dark almost black tactical green */
-    --foreground: 0 0% 95%;   
+    --background: 220 20% 6%; /* Deep dark premium charcoal */
+    --foreground: 45 10% 90%;   
     
     /* Strict UI contrast */
-    --card: 140 10% 5%;
-    --card-foreground: 0 0% 95%;
+    --card: 220 20% 8%;
+    --card-foreground: 45 10% 90%;
     
-    --popover: 140 10% 5%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 220 20% 8%;
+    --popover-foreground: 45 10% 90%;
     
     /* Primary Gold Highlight */
-    --primary: 43 100% 50%; /* #ffc107 approx bright gold */
+    --primary: 43 65% 54%; /* #D4AF37 Premium Gold */
     --primary-foreground: 0 0% 0%;
     
-    --secondary: 140 5% 15%; /* Muted olive tactical */
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 220 15% 12%; 
+    --secondary-foreground: 45 10% 90%;
     
-    --muted: 140 5% 15%;
-    --muted-foreground: 140 5% 60%;
+    --muted: 220 15% 12%;
+    --muted-foreground: 220 10% 60%;
     
-    --accent: 140 10% 20%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 43 45% 20%;
+    --accent-foreground: 43 65% 54%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 140 5% 20%;
-    --input: 140 5% 20%;
-    --ring: 43 100% 50%;
+    --border: 220 15% 20%;
+    --input: 220 15% 15%;
+    --ring: 43 65% 54%; /* Gold ring */
     
-    --radius: 0; /* SHARP CORNERS MANDATE */
+    --radius: 0.5rem; /* Soft premium rounding */
   }
 }
 
@@ -45,20 +45,22 @@
   body {
     @apply bg-background text-foreground bg-fixed;
     background-image: 
-      linear-gradient(to right, rgba(255,255,255,0.01) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,0.01) 1px, transparent 1px);
-    background-size: 40px 40px;
+      radial-gradient(circle at top center, rgba(212, 175, 55, 0.03) 0%, transparent 60%);
     font-family: 'Inter', sans-serif;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight text-white;
+    @apply font-display tracking-tight;
   }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-tactical-100/60 backdrop-blur-md border border-tactical-300 relative overflow-hidden;
+    @apply bg-tactical-200/50 backdrop-blur-xl border border-border relative overflow-hidden rounded-lg shadow-lg;
+  }
+  
+  .glass-panel-strong {
+    @apply bg-background/80 backdrop-blur-2xl border-b border-border shadow-xl;
   }
   
   .glass-panel::before {
@@ -66,39 +68,40 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
   }
 
   .text-glow-gold {
-    text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    text-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
   }
 
-  .text-glow-success {
-    text-shadow: 0 0 15px rgba(0, 255, 157, 0.7);
+  .shadow-glow-gold {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15), inset 0 0 2px rgba(212, 175, 55, 0.3);
   }
 
   .scanline {
     position: fixed;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(to bottom, transparent, rgba(0,255,157,0.4), transparent);
+    top: 0; left: 0; right: 0; height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.2) 51%);
+    background-size: 100% 4px;
     z-index: 50;
     pointer-events: none;
-    animation: scanline 8s linear infinite;
+    opacity: 0.3;
   }
 }
 
-/* Custom Scrollbar for Tactical Dashboards */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: hsl(var(--background));
 }
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--border));
-  border-radius: 0;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.5);
 }

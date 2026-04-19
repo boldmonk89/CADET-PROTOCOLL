@@ -1,32 +1,30 @@
-import { Shield } from "lucide-react";
-
 interface LogoProps {
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   showTagline?: boolean;
 }
 
 export const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
   const sizes = {
-    sm: { icon: 18, text: "text-sm", brackets: "text-base" },
-    md: { icon: 22, text: "text-base", brackets: "text-lg" },
-    lg: { icon: 32, text: "text-2xl", brackets: "text-3xl" },
+    sm: { img: "h-6 w-auto" },
+    md: { img: "h-10 w-auto" },
+    lg: { img: "h-16 w-auto" },
+    xl: { img: "h-32 w-auto" },
   };
   const s = sizes[size];
 
   return (
-    <div className="flex items-center gap-3">
+    <div className={`flex ${size === 'xl' ? 'flex-col items-center text-center gap-4' : 'flex-col justify-center'}`}>
       <div className="relative">
-        <Shield size={s.icon} className="text-primary" strokeWidth={1.5} />
-        <div className="absolute inset-0 bg-primary/20 blur-md -z-10" />
+        <img 
+          src="/cadet_protocol_logo_full.png" 
+          alt="Cadet Protocol Emblem" 
+          className={`${s.img} object-contain rounded-md`}
+        />
+        <div className="absolute inset-0 bg-primary/10 blur-xl -z-10 rounded-full" />
       </div>
-      <div className="flex flex-col leading-tight">
-        <div className={`flex items-center gap-1.5 font-mono-tac font-semibold tracking-widest text-primary text-glow-gold ${s.text}`}>
-          <span className={s.brackets}>■</span>
-          <span>CADET PROTOCOL</span>
-          <span className={s.brackets}>■</span>
-        </div>
+      <div>
         {showTagline && (
-          <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-0.5">
+          <div className="font-command italic text-xs uppercase tracking-[0.3em] text-muted-foreground mt-2">
             AI-Powered Defence Medical & Psychological Audit
           </div>
         )}
