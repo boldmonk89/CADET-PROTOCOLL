@@ -12,7 +12,7 @@ export default function Landing() {
   const logoOpacity = useTransform(scrollYProgress, [0, 0.4, 0.8, 1], [0, 0.45, 0.7, 0.8]);
   const logoBlur = useTransform(scrollYProgress, [0, 0.2, 0.6, 1], ["blur(40px)", "blur(0px)", "blur(0px)", "blur(3px)"]);
   const textY = useTransform(scrollYProgress, [0, 0.3], [0, -40]);
-  const logoY = useTransform(scrollYProgress, [0, 1], [0, 350]);
+  const logoY = useTransform(scrollYProgress, [0, 1], [0, 450]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden selection:bg-primary/30">
@@ -31,7 +31,7 @@ export default function Landing() {
       >
         <motion.div className="relative flex items-center justify-center">
           <motion.img 
-             src="/assets/logo_ultra_2025.png"
+             src="/assets/caduceus_solo.png"
              alt=""
              className="w-[85%] max-w-[900px] h-auto object-contain drop-shadow-[0_0_120px_rgba(212,175,55,0.3)] mix-blend-screen brightness-125"
              style={{ translateZ: 0 }}
