@@ -44,7 +44,8 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
   ];
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden selection:bg-primary/20">
+    <div className="flex h-screen bg-background overflow-hidden selection:bg-primary/20 relative">
+      <div className="parallax-caduceus" />
       
       {/* SIDEBAR (Desktop) */}
       <aside className="hidden md:flex flex-col w-72 border-r border-border bg-card shadow-2xl z-20">

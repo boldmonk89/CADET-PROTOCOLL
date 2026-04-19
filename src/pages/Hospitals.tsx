@@ -6,8 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { AppShell } from "@/components/cadet/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { COMMAND_HOSPITALS, distanceKm, getCityCoords } from "@/lib/cadet-data";
-import { Navigation, Phone, Copy, MapPin } from "lucide-react";
+import { COMMAND_HOSPITALS, distanceKm, getCityCoords, STATE_TO_COMMAND_MAP } from "@/lib/cadet-data";
+import { Navigation, Phone, Copy, MapPin, Target } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Hospitals() {
@@ -33,17 +33,25 @@ export default function Hospitals() {
   }, [user]);
 
   const candidateCity = overrideCity || profile?.city || "";
+  const candidateState = profile?.state || "";
   const coords = getCityCoords(candidateCity);
+  const recommendedNode = STATE_TO_COMMAND_MAP[candidateState];
 
   const hospitals = useMemo(() => {
     return COMMAND_HOSPITALS
-      .map((h) => ({ ...h, distance: coords ? distanceKm(coords, { lat: h.lat, lng: h.lng }) : null }))
+      .map((h) => ({ 
+        ...h, 
+        distance: coords ? distanceKm(coords, { lat: h.lat, lng: h.lng }) : null,
+        isRecommended: h.name === recommendedNode
+      }))
       .sort((a, b) => {
+        if (a.isRecommended) return -1;
+        if (b.isRecommended) return 1;
         if (a.distance == null) return 1;
         if (b.distance == null) return -1;
         return a.distance - b.distance;
       });
-  }, [coords]);
+  }, [coords, recommendedNode]);
 
   if (loading) return null;
   if (!user) { navigate("/auth"); return null; }
@@ -54,34 +62,42 @@ export default function Hospitals() {
     <AppShell candidateBadge={profile ? {
       name: profile.full_name, code: profile.candidate_code, service: profile.target_service, scheme: profile.entry_scheme,
     } : null}>
-      <div className="container py-8">
-        <div className="mb-6">
+      <div className="container py-8 overflow-hidden">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="mb-8"
+        >
           <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3">
             MODULE D : HOSPITAL ROUTING
           </div>
-          <h1 className="font-display text-3xl text-foreground mb-1">Command Hospital Referral</h1>
+          <h1 className="font-display text-4xl text-foreground mb-2 text-glow-gold">Command Hospital Referral</h1>
           <p className="text-sm text-muted-foreground max-w-2xl">
             This assessment is indicative — only an AFMS Medical Board has authority to determine final fitness.
             For UNFIT or BORDERLINE results, seek specialist evaluation at the nearest Command Hospital.
           </p>
-        </div>
+        </motion.div>
 
         {/* Trigger banner */}
         {triggered && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-panel-strong border-l-4 border-warning p-4 mb-6"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            className="glass-panel-strong border-l-4 border-warning p-5 mb-8 relative overflow-hidden"
           >
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Target size={80} className="text-warning" />
+            </div>
             <div className="font-sans font-bold text-[10px] uppercase tracking-widest text-warning mb-1">
               {results.length} ASSESSMENT FLAG{results.length > 1 ? "S" : ""}
             </div>
-            <div className="text-sm text-foreground/90 font-medium">
-              We recommend specialist review before your SSB / medical board date.
+            <div className="text-base text-foreground font-bold mb-3">
+              Specialist review recommended for {candidateState || "your region"}.
             </div>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               {results.slice(0, 6).map((r) => (
-                <span key={r.id} className="text-[9px] font-sans font-bold uppercase tracking-wider px-2 py-0.5 border border-warning/30 text-warning bg-warning/5 rounded-sm">
+                <span key={r.id} className="text-[9px] font-sans font-bold uppercase tracking-wider px-3 py-1 border border-warning/30 text-warning bg-warning/5 rounded-full">
                   {r.parameter} · {r.status}
                 </span>
               ))}
@@ -90,29 +106,36 @@ export default function Hospitals() {
         )}
 
         {/* City selector */}
-        <div className="glass-panel p-4 mb-6 flex flex-col sm:flex-row gap-3 items-start sm:items-end">
-          <div className="flex-1 space-y-1.5">
-            <label className="font-mono-tac text-[10px] uppercase tracking-widest text-muted-foreground">
-              Search from city {!coords && candidateCity && <span className="text-warning">// city not in registry, showing all</span>}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="glass-panel p-5 mb-8 flex flex-col sm:row gap-4 items-start sm:items-end liquid-glass-ultra"
+        >
+          <div className="flex-1 w-full space-y-2">
+            <label className="font-sans font-bold text-[10px] uppercase tracking-widest text-primary/70">
+              Active Search Anchor {!coords && candidateCity && <span className="text-warning ml-2">// manual location mode</span>}
             </label>
             <Input
               value={candidateCity}
               onChange={(e) => setOverrideCity(e.target.value)}
               placeholder="e.g. Patna, Mumbai, Delhi"
+              className="bg-black/20 border-white/10 h-12 text-base"
             />
           </div>
-          <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
-            Distances are city-level approximations · Maps API not required
+          <div className="text-[9px] font-sans font-bold uppercase tracking-[0.2em] text-muted-foreground/60 max-w-xs leading-relaxed">
+            Distances computed via Haversine geometry from city centroids. No telemetry used.
           </div>
-        </div>
+        </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {hospitals.map((h, i) => (
             <motion.div
               key={h.name}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              viewport={{ once: true }}
             >
               <HospitalCard hospital={h} />
             </motion.div>

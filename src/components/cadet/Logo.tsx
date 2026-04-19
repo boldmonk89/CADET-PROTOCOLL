@@ -5,27 +5,29 @@ interface LogoProps {
 
 export const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
   const sizes = {
-    sm: { img: "h-10 w-auto px-1" },
-    md: { img: "h-20 w-auto" },
-    lg: { img: "h-32 w-auto drop-shadow-xl" },
-    xl: { img: "h-56 w-auto" },
+    sm: { container: "h-8", img: "h-8 w-auto px-1", font: "text-sm", tagline: "text-[6px]" },
+    md: { container: "h-14", img: "h-14 w-auto", font: "text-lg", tagline: "text-[7px]" },
+    lg: { container: "h-24", img: "h-24 w-auto drop-shadow-xl", font: "text-2xl", tagline: "text-[9px]" },
+    xl: { container: "h-40", img: "h-40 w-auto shadow-glow-gold", font: "text-4xl", tagline: "text-xs" },
   };
   const s = sizes[size];
 
   return (
-    <div className={`flex ${size === 'xl' ? 'flex-col items-center text-center gap-4' : 'flex-col justify-center'}`}>
+    <div className={`flex items-center gap-3 ${size === 'xl' ? 'flex-col justify-center text-center' : 'flex-row'}`}>
       <div className="relative">
         <img 
-          src="/cadet_protocol_logo_full.png" 
+          src="/assets/logo_ultra.png" 
           alt="Cadet Protocol Emblem" 
-          className={`${s.img} object-contain rounded-md`}
+          className={`${s.img} object-contain rounded-md drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]`}
         />
-        <div className="absolute inset-0 bg-primary/10 blur-xl -z-10 rounded-full" />
       </div>
-      <div>
+      <div className="flex flex-col leading-none">
+        <div className={`${s.font} font-display font-bold tracking-[0.15em] text-white text-glow-gold`}>
+          CADET<span className="text-primary/95">PROTOCOL</span>
+        </div>
         {showTagline && (
-          <div className="font-command italic text-xs uppercase tracking-[0.3em] text-muted-foreground mt-2">
-            AI-Powered Defence Medical & Psychological Audit
+          <div className={`${s.tagline} font-sans font-bold uppercase tracking-[0.4em] text-primary/60 mt-0.5`}>
+            Strategic Medical Audit
           </div>
         )}
       </div>

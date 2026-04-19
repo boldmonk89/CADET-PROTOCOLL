@@ -15,11 +15,51 @@ export const INDIAN_STATES = [
   "Uttarakhand", "West Bengal"
 ] as const;
 
-export const INDIAN_CITIES = [
-  "New Delhi", "Mumbai", "Bangalore", "Chennai", "Kolkata", "Hyderabad", "Pune", 
-  "Patna", "Jaipur", "Lucknow", "Ahmedabad", "Chandigarh", "Bhopal", 
-  "Guwahati", "Kochi", "Visakhapatnam", "Udhampur", "Srinagar", "Jammu"
-] as const;
+export const STATE_CITY_MAP: Record<string, string[]> = {
+  "Bihar": ["Patna", "Gaya", "Muzaffarpur"],
+  "Chandigarh": ["Chandigarh"],
+  "Delhi": ["New Delhi", "Delhi NCR"],
+  "Gujarat": ["Ahmedabad", "Surat", "Vadodara"],
+  "Haryana": ["Gurugram", "Faridabad", "Panchkula", "Ambala"],
+  "Jammu and Kashmir": ["Jammu", "Srinagar", "Udhampur"],
+  "Karnataka": ["Bangalore", "Mysore", "Belgaum"],
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik"],
+  "Punjab": ["Ludhiana", "Amritsar", "Jalandhar"],
+  "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Agra", "Varanasi"],
+  "West Bengal": ["Kolkata", "Siliguri", "Asansol"],
+  // Default fallback for other states
+};
+
+export const STATE_TO_COMMAND_MAP: Record<string, string> = {
+  "Jammu and Kashmir": "Command Hospital (Northern Command)",
+  "Ladakh": "Command Hospital (Northern Command)",
+  "Punjab": "Command Hospital (Western Command)",
+  "Haryana": "Command Hospital (Western Command)",
+  "Himachal Pradesh": "Command Hospital (Western Command)",
+  "Delhi": "Army Hospital (Research & Referral)",
+  "Uttar Pradesh": "Command Hospital (Central Command)",
+  "Uttarakhand": "Command Hospital (Central Command)",
+  "Madhya Pradesh": "Command Hospital (Central Command)",
+  "Chhattisgarh": "Command Hospital (Central Command)",
+  "West Bengal": "Command Hospital (Eastern Command)",
+  "Bihar": "Command Hospital (Eastern Command)",
+  "Jharkhand": "Command Hospital (Eastern Command)",
+  "Odisha": "Command Hospital (Eastern Command)",
+  "Sikkim": "Command Hospital (Eastern Command)",
+  "Assam": "Command Hospital (Eastern Command)",
+  "Maharashtra": "Command Hospital (Southern Command)",
+  "Gujarat": "Command Hospital (Southern Command)",
+  "Rajasthan": "Command Hospital (Southern Command)",
+  "Goa": "Command Hospital (Southern Command)",
+  "Karnataka": "Command Hospital Air Force",
+  "Kerala": "Command Hospital (Southern Command)",
+  "Tamil Nadu": "Command Hospital (Southern Command)",
+  "Andhra Pradesh": "INHS Kalyani",
+  "Telangana": "Command Hospital (Southern Command)",
+};
+
+export const INDIAN_CITIES = Object.values(STATE_CITY_MAP).flat();
 
 export type EntryScheme = typeof ENTRY_SCHEMES[number];
 export type TargetService = typeof TARGET_SERVICES[number];

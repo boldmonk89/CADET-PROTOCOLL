@@ -15,7 +15,7 @@ import { ChevronLeft, ChevronRight, Check, CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { INDIAN_STATES, INDIAN_CITIES } from "@/lib/cadet-data";
+import { INDIAN_STATES, STATE_CITY_MAP } from "@/lib/cadet-data";
 
 const STEPS = [
   { num: 1, label: "Personal Details" },
@@ -154,11 +154,11 @@ export default function Intake() {
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.3 }}
-            className="glass-panel-strong corner-bracket p-6 md:p-8"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="glass-panel-strong corner-bracket p-6 md:p-8 liquid-glass-ultra"
           >
             {step === 1 && <Step1 profile={profile} update={update} />}
             {step === 2 && <Step2 profile={profile} update={update} />}
@@ -250,19 +250,28 @@ function Step1({ profile, update }: { profile: Profile; update: (p: Partial<Prof
             <SelectContent>{TARGET_SERVICES.map((s) => <SelectItem key={s} value={s}>{s.replace("_", " ")}</SelectItem>)}</SelectContent>
           </Select>
         </Field>
-        <Field label="City">
-          <Select value={profile.city} onValueChange={(v) => update({ city: v })}>
-            <SelectTrigger className="bg-background/40 border-primary/20 h-11"><SelectValue placeholder="Select City" /></SelectTrigger>
-            <SelectContent className="z-[100]">
-              {INDIAN_CITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+        <Field label="State">
+          <Select value={profile.state} onValueChange={(v) => {
+            update({ state: v, city: "" }); // Clear city when state changes
+          }}>
+            <SelectTrigger className="bg-background/40 border-primary/20 h-11"><SelectValue placeholder="Select State" /></SelectTrigger>
+            <SelectContent className="z-[100] liquid-glass-ultra">
+              {INDIAN_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
         </Field>
-        <Field label="State">
-          <Select value={profile.state} onValueChange={(v) => update({ state: v })}>
-            <SelectTrigger className="bg-background/40 border-primary/20 h-11"><SelectValue placeholder="Select State" /></SelectTrigger>
-            <SelectContent className="z-[100]">
-              {INDIAN_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+        <Field label="City">
+          <Select value={profile.city} onValueChange={(v) => update({ city: v })} disabled={!profile.state}>
+            <SelectTrigger className="bg-background/40 border-primary/20 h-11">
+              <SelectValue placeholder={profile.state ? "Select City" : "Select State First"} />
+            </SelectTrigger>
+            <SelectContent className="z-[100] liquid-glass-ultra">
+              {profile.state && STATE_CITY_MAP[profile.state]?.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+              {!STATE_CITY_MAP[profile.state || ""] && (
+                <div className="p-2 text-[10px] text-muted-foreground italic">No cities registered for this state</div>
+              )}
             </SelectContent>
           </Select>
         </Field>

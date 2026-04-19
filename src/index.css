@@ -70,20 +70,38 @@
       inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   }
 
-  .liquid-glass-ultra::after {
+  .liquid-glass-pill {
+    @apply rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 relative overflow-hidden transition-all duration-300;
+    box-shadow: 
+      0 8px 24px 0 rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  .liquid-glass-pill::after, .liquid-glass-ultra::after {
     content: '';
     position: absolute;
     top: -50%; left: -50%; right: -50%; bottom: -50%;
-    background: radial-gradient(circle at center, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+    background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.15) 0%, transparent 60%);
     pointer-events: none;
-    opacity: 0.5;
+    opacity: 0.6;
   }
 
-  .liquid-glass-ultra:hover {
-    @apply bg-white/10 border-white/20 scale-[1.02];
-    box-shadow: 
-      0 12px 40px 0 rgba(0, 0, 0, 0.45),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  .liquid-glass-pill:hover, .liquid-glass-ultra:hover {
+    @apply bg-white/10 border-white/20 scale-[1.02] shadow-glow-gold;
+  }
+
+  .parallax-caduceus {
+    background-image: url('/assets/caduceus.jpeg');
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 50% auto;
+    opacity: 0.035;
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    filter: sepia(1.2) saturate(2) hue-rotate(-20deg) contrast(1.1);
   }
 
   .text-glow-gold {
@@ -91,7 +109,7 @@
   }
 
   .shadow-glow-gold {
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15), inset 0 0 2px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45), 0 0 20px rgba(212, 175, 55, 0.15), inset 0 0 1px rgba(255, 255, 255, 0.2);
   }
 
   .scanline {
