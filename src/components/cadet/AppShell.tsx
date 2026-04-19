@@ -25,6 +25,11 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
   const location = useLocation();
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Close mobile menu on navigation
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -32,10 +37,10 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
   };
 
   const navItems = [
-    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { name: "Intake", path: "/intake", icon: UserPlus },
-    { name: "Scans", path: "/scan", icon: Activity },
-    { name: "Hospitals", path: "/hospitals", icon: MapPin },
+    { name: "Summary", path: "/dashboard", icon: LayoutDashboard },
+    { name: "Cadet Intake", path: "/intake", icon: UserPlus },
+    { name: "Medical Audit", path: "/scan", icon: Activity },
+    { name: "Referrals", path: "/hospitals", icon: MapPin },
   ];
 
   return (
@@ -55,6 +60,11 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
           </div>
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
+            const isExaminerRequired = item.path === "/scan";
+            const canAccess = !isExaminerRequired || role === "examiner" || role === "admin";
+            
+            if (!canAccess) return null;
+
             return (
               <Link key={item.name} to={item.path}>
                 <div
@@ -96,21 +106,26 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
             </Button>
           </div>
           <div className="flex-1 p-6 space-y-4">
-            {navItems.map((item) => (
-              <Link 
-                key={item.name} 
-                to={item.path} 
-                onClick={() => setMobileMenuOpen(false)}
-                className="block"
-              >
-                <div className={`flex items-center gap-4 px-4 py-4 rounded-md border border-border/50 ${
-                  location.pathname.startsWith(item.path) ? "bg-primary/10 text-primary border-primary/50" : "text-muted-foreground"
-                }`}>
-                  <item.icon size={20} />
-                  <span className="font-mono-tac text-sm uppercase tracking-widest">{item.name}</span>
-                </div>
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isExaminerRequired = item.path === "/scan";
+              if (isExaminerRequired && role !== "examiner" && role !== "admin") return null;
+
+              return (
+                <Link 
+                  key={item.name} 
+                  to={item.path} 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block"
+                >
+                  <div className={`flex items-center gap-4 px-4 py-4 rounded-md border border-border/50 ${
+                    location.pathname.startsWith(item.path) ? "bg-primary/10 text-primary border-primary/50" : "text-muted-foreground"
+                  }`}>
+                    <item.icon size={20} />
+                    <span className="font-sans font-bold text-sm uppercase tracking-widest">{item.name}</span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

@@ -5,6 +5,22 @@ export const TARGET_SERVICES = ["ARMY", "NAVY", "AIR_FORCE"] as const;
 export const GENDERS = ["Male", "Female", "Other"] as const;
 export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 
+export const INDIAN_STATES = [
+  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", 
+  "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli", "Daman and Diu", "Delhi", 
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", 
+  "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", 
+  "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", 
+  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", 
+  "Uttarakhand", "West Bengal"
+] as const;
+
+export const INDIAN_CITIES = [
+  "New Delhi", "Mumbai", "Bangalore", "Chennai", "Kolkata", "Hyderabad", "Pune", 
+  "Patna", "Jaipur", "Lucknow", "Ahmedabad", "Chandigarh", "Bhopal", 
+  "Guwahati", "Kochi", "Visakhapatnam", "Udhampur", "Srinagar", "Jammu"
+] as const;
+
 export type EntryScheme = typeof ENTRY_SCHEMES[number];
 export type TargetService = typeof TARGET_SERVICES[number];
 

@@ -7,11 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -41,7 +44,7 @@ export default function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success("ACCESS GRANTED");
+        toast.success("Welcome Back");
         navigate("/dashboard");
       }
     } catch (err: any) {
@@ -106,24 +109,33 @@ export default function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-background/50 border-primary/20 focus:border-primary/50 text-foreground font-mono-tac tracking-wide h-12"
-                placeholder="cadet@protocol.in"
+                className="bg-background/50 border-primary/20 focus:border-primary/50 text-foreground font-sans tracking-wide h-12"
+                placeholder="name@example.com"
               />
             </div>
             <div className="space-y-3">
               <Label htmlFor="password" className="font-sans font-bold text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 Password
               </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="bg-background/50 border-primary/20 focus:border-primary/50 text-foreground font-mono-tac tracking-widest h-12"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="bg-background/50 border-primary/20 focus:border-primary/50 text-foreground font-sans tracking-widest h-12 pr-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <Button
@@ -152,7 +164,7 @@ export default function AuthPage() {
             onClick={handleGoogle}
             disabled={loading}
             variant="outline"
-            className="w-full border-primary/20 hover:border-primary/50 hover:bg-primary/5 text-foreground font-mono-tac uppercase tracking-widest text-[11px] h-12 transition-all flex items-center justify-center gap-3"
+            className="w-full border-primary/10 hover:border-primary/20 hover:bg-primary/5 text-foreground font-sans font-bold uppercase tracking-widest text-[11px] h-12 transition-all flex items-center justify-center gap-3"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

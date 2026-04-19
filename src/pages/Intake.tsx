@@ -11,7 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ENTRY_SCHEMES, TARGET_SERVICES, GENDERS, BLOOD_GROUPS, bmi } from "@/lib/cadet-data";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { INDIAN_STATES, INDIAN_CITIES } from "@/lib/cadet-data";
 
 const STEPS = [
   { num: 1, label: "Personal Details" },
@@ -207,7 +211,26 @@ function Step1({ profile, update }: { profile: Profile; update: (p: Partial<Prof
           <Input value={profile.full_name || ""} onChange={(e) => update({ full_name: e.target.value })} />
         </Field>
         <Field label="Date of Birth">
-          <Input type="date" value={profile.date_of_birth || ""} onChange={(e) => update({ date_of_birth: e.target.value })} />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={`w-full justify-start text-left font-sans h-11 border-primary/20 bg-background/40 ${!profile.date_of_birth && "text-muted-foreground"}`}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {profile.date_of_birth ? format(new Date(profile.date_of_birth), "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 z-[100]" align="start">
+              <Calendar
+                mode="single"
+                selected={profile.date_of_birth ? new Date(profile.date_of_birth) : undefined}
+                onSelect={(date) => update({ date_of_birth: date?.toISOString() })}
+                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </Field>
         <Field label="Gender">
           <Select value={profile.gender} onValueChange={(v) => update({ gender: v })}>
@@ -228,10 +251,20 @@ function Step1({ profile, update }: { profile: Profile; update: (p: Partial<Prof
           </Select>
         </Field>
         <Field label="City">
-          <Input value={profile.city || ""} onChange={(e) => update({ city: e.target.value })} placeholder="e.g. Patna" />
+          <Select value={profile.city} onValueChange={(v) => update({ city: v })}>
+            <SelectTrigger className="bg-background/40 border-primary/20 h-11"><SelectValue placeholder="Select City" /></SelectTrigger>
+            <SelectContent className="z-[100]">
+              {INDIAN_CITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </Field>
         <Field label="State">
-          <Input value={profile.state || ""} onChange={(e) => update({ state: e.target.value })} />
+          <Select value={profile.state} onValueChange={(v) => update({ state: v })}>
+            <SelectTrigger className="bg-background/40 border-primary/20 h-11"><SelectValue placeholder="Select State" /></SelectTrigger>
+            <SelectContent className="z-[100]">
+              {INDIAN_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </Field>
         <Field label="Contact Phone">
           <Input type="tel" value={profile.contact_phone || ""} onChange={(e) => update({ contact_phone: e.target.value })} />
