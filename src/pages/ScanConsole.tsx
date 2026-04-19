@@ -30,6 +30,7 @@ export default function ScanConsole() {
   const [status, setStatus] = useState<string>("FIT");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [hasCaptured, setHasCaptured] = useState(false);
   
   // Camera State
   const [cameraActive, setCameraActive] = useState(false);
@@ -73,16 +74,32 @@ export default function ScanConsole() {
   const startAiScan = () => {
     if (!cameraActive) return;
     setIsScanning(true);
+    setHasCaptured(false);
     toast.info("Initialising CV Analysis Engine...");
     
-    // Simulate AI detection sequence
+    // Switch-based context-aware simulation
     setTimeout(() => {
-      const randomValue = param === "Height" 
-        ? (160 + Math.random() * 25).toFixed(1) + " cm"
-        : "POSTURE: " + (Math.random() > 0.5 ? "OPTIMAL" : "SLIGHT KYPHOSIS");
+      let result = "";
+      switch(param) {
+        case "Height": 
+          result = (160 + Math.random() * 25).toFixed(1) + " cm";
+          break;
+        case "Hearing":
+          result = Math.random() > 0.3 ? "HEARING: 6/6 OPTIMAL (CP-I)" : "HEARING: TRACE DEFICIT (CP-II)";
+          break;
+        case "Vision":
+          result = Math.random() > 0.5 ? "VISION: 6/6 DISTANT" : "VISION: 6/9 MILD ACUITY";
+          break;
+        case "Weight":
+          result = (50 + Math.random() * 40).toFixed(1) + " kg";
+          break;
+        default:
+          result = "POSTURE: " + (Math.random() > 0.5 ? "OPTIMAL" : "SLIGHT KYPHOSIS");
+      }
       
-      setMeasured(randomValue);
+      setMeasured(result);
       setIsScanning(false);
+      setHasCaptured(true);
       toast.success("Parameter accurately captured via Computer Vision.");
     }, 3500);
   };
@@ -220,11 +237,18 @@ export default function ScanConsole() {
                 {cameraActive && (
                   <Button 
                     onClick={startAiScan}
-                    disabled={isScanning}
-                    className="font-sans font-bold text-[10px] uppercase tracking-widest h-10 px-6 gap-2 bg-primary text-primary-foreground shadow-glow-gold"
+                    disabled={!cameraActive || isScanning}
+                    className="w-full bg-black/40 border border-primary/20 hover:bg-black/60 font-sans font-bold uppercase text-[10px] tracking-widest h-12"
                   >
-                    <Activity size={14} />
-                    {isScanning ? "Scanning Target..." : "Capture AI Measurement"}
+                    {isScanning ? (
+                      <>Analysing...</>
+                    ) : hasCaptured ? (
+                      <>Re-Test Parameter</>
+                    ) : (
+                      <>
+                        <Activity size={14} className="mr-2 text-primary" /> Capture AI Measurement
+                      </>
+                    )}
                   </Button>
                 )}
               </div>

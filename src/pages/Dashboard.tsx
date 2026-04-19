@@ -71,13 +71,18 @@ export default function Dashboard() {
           {/* Quick Actions Tooltip Area */}
           <div className="flex flex-wrap gap-4 mb-8">
             {intakeDone && (
-              <Button 
-                onClick={() => generateMedicalCertificate(profile, results)}
-                disabled={results.length < 3}
-                className="bg-primary text-primary-foreground font-sans font-bold uppercase text-[10px] tracking-widest px-6 shadow-glow-gold hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:grayscale"
-              >
-                <Download size={14} className="mr-2" /> {results.length < 3 ? "Complete Audit to Download" : "Download Fitness Certificate"}
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button 
+                  onClick={() => generateMedicalCertificate(profile, results)}
+                  disabled={results.length < 3}
+                  className="bg-primary text-primary-foreground font-sans font-bold uppercase text-[10px] tracking-widest px-6 shadow-glow-gold hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:grayscale"
+                >
+                  <Download size={14} className="mr-2" /> {results.length < 3 ? "Complete Audit to Download" : "Download Fitness Certificate"}
+                </Button>
+                <p className="text-[9px] font-sans font-medium text-muted-foreground/60 italic tracking-wider">
+                  *Official AFMS Intelligence Report unlocks after recording at least 3 biometric parameters.
+                </p>
+              </div>
             )}
             {isExaminer && (
               <Link to="/scan">
