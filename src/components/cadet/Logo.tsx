@@ -5,10 +5,10 @@ interface LogoProps {
 
 export const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
   const sizes = {
-    sm: { img: "h-6 w-auto" },
-    md: { img: "h-10 w-auto" },
-    lg: { img: "h-16 w-auto" },
-    xl: { img: "h-32 w-auto" },
+    sm: { img: "h-8 w-auto px-1" },
+    md: { img: "h-14 w-auto" },
+    lg: { img: "h-24 w-auto drop-shadow-xl" },
+    xl: { img: "h-40 w-auto" },
   };
   const s = sizes[size];
 
