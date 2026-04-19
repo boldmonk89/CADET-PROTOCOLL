@@ -73,9 +73,10 @@ export default function Dashboard() {
             {intakeDone && (
               <Button 
                 onClick={() => generateMedicalCertificate(profile, results)}
-                className="bg-primary text-primary-foreground font-sans font-bold uppercase text-[10px] tracking-widest px-6 shadow-glow-gold hover:scale-[1.02] transition-transform"
+                disabled={results.length < 3}
+                className="bg-primary text-primary-foreground font-sans font-bold uppercase text-[10px] tracking-widest px-6 shadow-glow-gold hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:grayscale"
               >
-                <Download size={14} className="mr-2" /> Download Fitness Certificate
+                <Download size={14} className="mr-2" /> {results.length < 3 ? "Complete Audit to Download" : "Download Fitness Certificate"}
               </Button>
             )}
             {isExaminer && (

@@ -183,6 +183,14 @@ export const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   coimbatore: { lat: 11.0168, lng: 76.9558 },
   indore: { lat: 22.7196, lng: 75.8577 },
   thiruvananthapuram: { lat: 8.5241, lng: 76.9366 },
+  jodhpur: { lat: 26.2389, lng: 73.0243 },
+  srinagar: { lat: 34.0837, lng: 74.7973 },
+  jalandhar: { lat: 31.3260, lng: 75.5762 },
+  ambala: { lat: 30.3782, lng: 76.7767 },
+  agartala: { lat: 23.8315, lng: 91.2868 },
+  shillong: { lat: 25.5788, lng: 91.8831 },
+  nagpur: { lat: 21.1458, lng: 79.0882 },
+  kanpur: { lat: 26.4499, lng: 80.3319 },
 };
 
 export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {

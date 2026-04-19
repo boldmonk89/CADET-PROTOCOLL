@@ -45,6 +45,13 @@ export default function Hospitals() {
         isRecommended: recommendedNode && h.name.toLowerCase().includes(recommendedNode.toLowerCase().split("(")[0].trim().toLowerCase())
       }))
       .sort((a, b) => {
+        // If searching a specific city, distance is the absolute priority
+        if (overrideCity) {
+          if (a.distance !== null && b.distance !== null) return a.distance - b.distance;
+          if (a.distance !== null) return -1;
+          if (b.distance !== null) return 1;
+        }
+        
         if (a.isRecommended && !b.isRecommended) return -1;
         if (!a.isRecommended && b.isRecommended) return 1;
         if (a.distance !== null && b.distance !== null) return a.distance - b.distance;
