@@ -45,7 +45,7 @@
   body {
     @apply bg-background text-foreground bg-fixed;
     background-image: 
-      radial-gradient(circle at top center, rgba(212, 175, 55, 0.03) 0%, transparent 60%);
+      radial-gradient(circle at top center, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
     font-family: 'Inter', sans-serif;
   }
   
@@ -91,17 +91,17 @@
   }
 
   .parallax-caduceus {
-    background-image: url('/assets/caduceus.jpeg');
+    background-image: url('/assets/caduceus.png');
     background-attachment: fixed;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 50% auto;
-    opacity: 0.035;
+    background-size: 35% auto;
+    opacity: 0.045;
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: -1;
-    filter: sepia(1.2) saturate(2) hue-rotate(-20deg) contrast(1.1);
+    filter: sepia(0.5) contrast(1.2);
   }
 
   .text-glow-gold {

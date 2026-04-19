@@ -184,13 +184,19 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
             {children}
           </div>
           
-          {/* Footer inside scrolling area */}
-          <footer className="max-w-6xl mx-auto mt-auto py-6 border-t border-border/50 text-center md:text-left flex flex-col md:flex-row justify-between gap-4">
-             <div className="font-sans font-bold text-[9px] uppercase tracking-[0.3em] text-muted-foreground/40">
-               Cadet Protocol 2025–2028
+          {/* Tactical Bottom Bar */}
+          <footer className="max-w-6xl mx-auto mt-auto py-10 border-t border-primary/10">
+             <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 opacity-40">
+               <div className="font-mono-tac text-[10px] uppercase tracking-[0.4em] text-muted-foreground whitespace-nowrap">
+                 Cadet Protocol 2025–2028
+               </div>
+               <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-primary/30" />
+               <div className="font-mono-tac text-[10px] uppercase tracking-[0.4em] text-primary whitespace-nowrap">
+                 Secure Environment
+               </div>
              </div>
-             <div className="font-sans font-bold text-[9px] uppercase tracking-[0.3em] text-primary/30">
-               Secure Environment
+             <div className="mt-6 flex justify-center">
+               <div className="h-px w-24 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
              </div>
           </footer>
         </div>
