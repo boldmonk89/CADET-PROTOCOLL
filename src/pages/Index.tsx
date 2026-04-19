@@ -116,7 +116,7 @@ export default function Landing() {
                 variant="ghost"
                 className="hover:bg-primary/5 text-foreground font-sans font-bold uppercase tracking-widest text-[11px] h-14 px-12 transition-all duration-300"
               >
-                Returning Candidate
+                ALREADY LOGGED IN??
               </Button>
             </Link>
           </div>
