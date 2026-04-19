@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Logo } from "@/components/cadet/Logo";
+import { HeroLogo3D } from "@/components/cadet/HeroLogo3D";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Shield, Activity, FileCheck, MapPin, ArrowRight } from "lucide-react";
@@ -29,29 +30,16 @@ export default function Landing() {
         }}
         className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"
       >
-        <motion.div className="relative flex items-center justify-center">
-          <motion.img 
-             src="/assets/caduceus_solo.png"
-             alt=""
-             className="w-[85%] max-w-[900px] h-auto object-contain drop-shadow-[0_0_120px_rgba(212,175,55,0.3)] mix-blend-screen brightness-125"
-             style={{ translateZ: 0 }}
-          />
-          {/* Subtle Glow Ring */}
-          <motion.div 
-            className="absolute w-[90vw] h-[90vw] max-w-[1100px] max-h-[1100px] rounded-full bg-primary/5 blur-[120px] -z-10"
-          />
-        </motion.div>
+        <div className="w-full max-w-[1200px]">
+          <HeroLogo3D />
+        </div>
       </motion.div>
 
       <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/5 to-transparent blur-3xl pointer-events-none"></div>
       
       <header className="container py-8 flex items-center justify-between relative z-10 border-b border-border/30">
         <Logo size="md" />
-        <Link to="/auth">
-          <Button variant="ghost" className="font-sans font-bold text-xs uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
-            EXAMINER PORTAL
-          </Button>
-        </Link>
+        <div />
       </header>
 
       <section className="container flex-1 flex flex-col items-center justify-center text-center py-16 md:py-24 relative z-10">
