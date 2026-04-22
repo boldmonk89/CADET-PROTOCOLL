@@ -12,7 +12,8 @@ import {
   LogOut,
   Menu,
   X,
-  CreditCard
+  CreditCard,
+  ChevronLeft
 } from "lucide-react";
 
 interface AppShellProps {
@@ -146,10 +147,22 @@ export const AppShell = ({ children, candidateBadge }: AppShellProps) => {
         
         {/* TOP BAR */}
         <header className="h-[72px] flex-shrink-0 border-b border-border bg-card/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 z-10 sticky top-0">
-          <div className="flex items-center gap-4 md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(true)}>
-              <Menu className="text-primary" />
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(-1)}
+              className="hover:bg-primary/10 text-primary/70 hover:text-primary transition-all duration-300"
+              title="Go Back"
+            >
+              <ChevronLeft size={20} />
             </Button>
+            
+            <div className="flex items-center gap-4 md:hidden">
+              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(true)}>
+                <Menu className="text-primary" />
+              </Button>
+            </div>
           </div>
           
           <div className="flex-1 flex items-center justify-end md:justify-between">
