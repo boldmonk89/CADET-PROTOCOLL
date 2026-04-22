@@ -32,17 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      const newUser = newSession?.user ?? null;
-      setUser(newUser);
-      if (newUser) {
-        fetchRole(newUser.id);
-      } else {
-        setRole(null);
-      }
-    });
-
+    // First, restore session from storage (this is the source of truth on page load)
     supabase.auth.getSession().then(({ data: { session: existing } }) => {
       setSession(existing);
       const newUser = existing?.user ?? null;
@@ -51,6 +41,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         fetchRole(newUser.id);
       }
       setLoading(false);
+    });
+
+    // Then listen for subsequent auth changes (login, logout, token refresh)
+    // Skip INITIAL_SESSION since getSession() above handles initial hydration
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event === 'INITIAL_SESSION') return; // Already handled by getSession above
+      
+      setSession(newSession);
+      const newUser = newSession?.user ?? null;
+      setUser(newUser);
+      if (newUser) {
+        fetchRole(newUser.id);
+      } else {
+        setRole(null);
+      }
     });
 
     return () => subscription.unsubscribe();

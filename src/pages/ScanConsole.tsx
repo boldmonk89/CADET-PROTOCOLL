@@ -223,7 +223,13 @@ export default function ScanConsole() {
     toast.success("Assessment Complete. Result pushed to console.");
   };
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans font-bold text-xs uppercase tracking-widest text-primary animate-breathe">
+        SYNCING
+      </div>
+    );
+  }
   if (!user) { navigate("/auth"); return null; }
 
   const scheme = profile?.entry_scheme;
