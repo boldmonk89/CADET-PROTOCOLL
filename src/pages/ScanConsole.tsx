@@ -149,15 +149,45 @@ export default function ScanConsole() {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = false;
-    recognition.lang = 'en-US';
+    recognition.lang = 'en-IN'; // Better for Indian accents
+    
     recognition.onresult = (event: any) => {
       const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
       handleVoiceResponse(transcript);
     };
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      console.log("Voice recognition active");
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      // Auto-restart if the test is still active
+      if (colorTestActive && recognitionRef.current) {
+        setTimeout(() => {
+          try {
+            recognitionRef.current?.start();
+          } catch (e) {
+            console.error("Auto-restart failed:", e);
+          }
+        }, 1000);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      if (event.error === 'not-allowed') {
+        toast.error("Microphone access denied. Please check site permissions.");
+      }
+    };
+
     recognitionRef.current = recognition;
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("Manual start failed:", e);
+    }
   };
 
   const handleVoiceResponse = (text: string) => {
@@ -410,7 +440,7 @@ export default function ScanConsole() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6"
+            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-2xl flex flex-col items-center justify-start p-6 pt-32 pb-12 overflow-y-auto"
           >
             <div className="absolute top-8 left-8 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full border border-primary/20 flex items-center justify-center bg-primary/5">
@@ -425,8 +455,16 @@ export default function ScanConsole() {
             <div className="absolute top-8 right-8 flex items-center gap-4 text-right">
               <div>
                 <div className="text-[10px] font-sans font-bold uppercase tracking-widest text-primary/60">Voice Link</div>
-                <div className="text-sm font-sans font-bold text-foreground">
+                <div className="text-sm font-sans font-bold text-foreground flex items-center gap-2">
                   {isListening ? "LISTENING..." : "RECONNECTING..."}
+                  {!isListening && (
+                    <button 
+                      onClick={() => initSpeechRecognition()}
+                      className="text-[9px] text-primary hover:underline"
+                    >
+                      (Retry)
+                    </button>
+                  )}
                 </div>
               </div>
               <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${isListening ? 'border-green-500/40 bg-green-500/5' : 'border-destructive/40 bg-destructive/5'}`}>
