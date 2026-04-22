@@ -1,60 +1,66 @@
-import { useEffect, useState, useRef } from "react";
+/**
+ * CADET PROTOCOL — Assessment Theatre (ScanConsole)
+ * 
+ * COMPLETE REWRITE: Modular test launcher dashboard.
+ * Tier 1: Self-testable parameters via camera/audio/screen/manual input
+ * Tier 2: Clinical referrals for parameters requiring hospital equipment
+ */
+
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell } from "@/components/cadet/AppShell";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { AFMS_STANDARDS, bmi } from "@/lib/cadet-data";
+import { SELF_TESTS, CLINICAL_REFERRALS, TestConfig, TestStatus } from "@/data/test-config";
+import { CADET_MEDICAL_DATABASE, ServiceBranch, Gender } from "@/data/medical-standards";
 import { ISHIHARA_SEQUENCE, calculateCPVerdict } from "@/lib/color-vision";
-import { Document, Page, pdfjs } from "react-pdf";
 import { toast } from "sonner";
-import { Camera, ShieldCheck, ShieldAlert, ShieldX, Power, Activity, Maximize2, Mic, MicOff, Timer, FileText } from "lucide-react";
+import {
+  ShieldCheck, ShieldAlert, ShieldX, Activity, MapPin, FileText, ChevronRight,
+  CheckCircle2, Circle, Clock, Download, Hospital,
+} from "lucide-react";
 
-// PDF.js Worker Configuration
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Lazy imports for test components
+import PoseTest from "@/components/tests/PoseTest";
+import SnellenTest from "@/components/tests/SnellenTest";
+import HearingTest from "@/components/tests/HearingTest";
+import AnthropometricInput from "@/components/tests/AnthropometricInput";
+import TremorTest from "@/components/tests/TremorTest";
+import SelfAssessment from "@/components/tests/SelfAssessment";
 
-// CSS Imports for PDF layers
+// CP-Matrix (Ishihara) - reuse existing system
+import { Document, Page, pdfjs } from "react-pdf";
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { Timer, Mic, MicOff } from "lucide-react";
 
-const PARAMETERS = [
-  "Height", "Weight (BMI)", "Chest Expansion", "Vision (Acuity)",
-  "Colour Vision", "Myopia / Refraction", "Hearing", "ENT (DNS/Ear)", 
-  "Spine (LS-Spine/X-Ray)", "Blood (Hb/HPLC)", "USG (Abd/Gyno)", "Posture / Gait", "Skin Condition",
-];
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-const STATUSES = ["FIT", "BORDERLINE", "UNFIT", "INCONCLUSIVE"] as const;
+interface TestResult {
+  testId: string;
+  value: string;
+  status: 'FIT' | 'UNFIT' | 'BORDERLINE';
+  raw: string;
+  completedAt: string;
+}
 
 export default function ScanConsole() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
-  const [results, setResults] = useState<any[]>([]);
-  const [param, setParam] = useState(PARAMETERS[0]);
-  const [measured, setMeasured] = useState("");
-  const [status, setStatus] = useState<string>("FIT");
-  const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [hasCaptured, setHasCaptured] = useState(false);
-  
-  // Camera State
-  const [cameraActive, setCameraActive] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
+  const [activeTest, setActiveTest] = useState<string | null>(null);
+  const [savedResults, setSavedResults] = useState<any[]>([]);
 
-  // CP-Matrix (Color Vision) State
+  // CP-Matrix state (reuse existing)
   const [colorTestActive, setColorTestActive] = useState(false);
   const [currentPlateIndex, setCurrentPlateIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(6);
   const [userResponses, setUserResponses] = useState<any[]>([]);
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = { current: null as any };
 
   useEffect(() => {
     if (!user) return;
@@ -64,81 +70,67 @@ export default function ScanConsole() {
         supabase.from("assessment_results").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       ]);
       setProfile(p);
-      setResults(r || []);
+      setSavedResults(r || []);
     })();
   }, [user]);
 
-  const toggleCamera = async () => {
-    if (cameraActive) {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-      setCameraActive(false);
-      setIsScanning(false);
-    } else {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-        streamRef.current = stream;
-        setCameraActive(true);
-      } catch (err) {
-        toast.error("Camera access denied or not available");
-      }
-    }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans font-bold text-xs uppercase tracking-widest text-primary animate-breathe">
+        SYNCING
+      </div>
+    );
+  }
+  if (!user) { navigate("/auth"); return null; }
+
+  // Derive AFMS standards for this candidate
+  const gender = (profile?.gender || 'Male') as Gender;
+  const service = profile?.target_service || 'ARMY';
+  const branchKey: ServiceBranch = service === 'AIR_FORCE' ? 'AirForce_Flying' : service === 'NAVY' ? 'Navy_General' : 'Army_Combat';
+  const standards = CADET_MEDICAL_DATABASE[branchKey]?.[gender];
+
+  const getTestStatus = (testId: string): TestStatus => {
+    if (testResults[testId]) return 'COMPLETED';
+    if (activeTest === testId) return 'IN_PROGRESS';
+    return 'NOT_STARTED';
   };
 
-  const startAiScan = () => {
-    if (!cameraActive) return;
-    
-    // If target is Color Vision, launch the dedicated CP-Matrix module
-    if (param === "Colour Vision") {
+  const completedCount = Object.keys(testResults).length;
+  const totalSelfTests = SELF_TESTS.length;
+
+  // Save result to Supabase
+  const saveResult = async (testId: string, result: TestResult) => {
+    const { error } = await supabase.from("assessment_results").insert({
+      user_id: user.id,
+      parameter: SELF_TESTS.find(t => t.id === testId)?.name || testId,
+      measured_value: result.raw,
+      status: result.status,
+      notes: `Self-assessed via Cadet Protocol. ${result.value}`,
+    });
+    if (error) toast.error("Failed to save: " + error.message);
+  };
+
+  const handleTestComplete = (testId: string, result: Omit<TestResult, 'testId' | 'completedAt'>) => {
+    const fullResult: TestResult = {
+      ...result,
+      testId,
+      completedAt: new Date().toISOString(),
+    };
+    setTestResults(prev => ({ ...prev, [testId]: fullResult }));
+    setActiveTest(null);
+    saveResult(testId, fullResult);
+    toast.success(`${SELF_TESTS.find(t => t.id === testId)?.shortName || testId} — ${result.status}`);
+  };
+
+  const launchTest = (testId: string) => {
+    if (testId === 'COLOUR_VISION') {
       startColorTest();
       return;
     }
-
-    setIsScanning(true);
-    setHasCaptured(false);
-    toast.info("Initialising CV Analysis Engine...");
-    
-    // Switch-based context-aware simulation
-    setTimeout(() => {
-      let result = "";
-      switch(param) {
-        case "Height": 
-          result = (160 + Math.random() * 25).toFixed(1) + " cm";
-          break;
-        case "Hearing":
-          result = Math.random() > 0.3 ? "HEARING: 6/6 OPTIMAL (CP-I)" : "HEARING: TRACE DEFICIT (CP-II)";
-          break;
-        case "Myopia / Refraction":
-          result = Math.random() > 0.5 ? "REFRACTION: -1.25D (STABLE)" : "REFRACTION: -4.50D (EXCEEDS_LIMIT)";
-          break;
-        case "ENT (DNS/Ear)":
-          result = Math.random() > 0.6 ? "ENT: CLEAR" : "ENT: MILD DNS (TR_RECOMMENDED)";
-          break;
-        case "Spine (LS-Spine/X-Ray)":
-          result = "X-RAY_LS: " + (Math.random() > 0.5 ? "NORMAL" : "BONY_SKELETON_DEFECT (PR)");
-          break;
-        case "Vision (Acuity)":
-          result = Math.random() > 0.5 ? "VISION: 6/6 DISTANT" : "VISION: 6/9 MILD ACUITY";
-          break;
-        case "Weight (BMI)":
-          result = (50 + Math.random() * 40).toFixed(1) + " kg";
-          break;
-        default:
-          result = "SCAN: " + (Math.random() > 0.5 ? "OPTIMAL" : "REVIEW REQUIRED");
-      }
-      
-      setMeasured(result);
-      setIsScanning(false);
-      setHasCaptured(true);
-      toast.success("Parameter accurately captured via Computer Vision.");
-    }, 3500);
+    setActiveTest(testId);
   };
 
-  // CP-Matrix Logic
+  // ── CP-Matrix Logic (Reuse existing) ──────────────────────────
   const startColorTest = () => {
     setColorTestActive(true);
     setCurrentPlateIndex(0);
@@ -158,38 +150,25 @@ export default function ScanConsole() {
     recognition.continuous = true;
     recognition.interimResults = false;
     recognition.lang = 'en-US';
-
     recognition.onresult = (event: any) => {
       const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-      console.log("Voice Captured:", transcript);
       handleVoiceResponse(transcript);
     };
-
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
-    
     recognitionRef.current = recognition;
     recognition.start();
   };
 
   const handleVoiceResponse = (text: string) => {
-    // Basic number extraction or 'nothing'
     const match = text.match(/\d+/) || (text.includes('nothing') ? ['nothing'] : null);
     if (match) {
       const response = match[0];
       const plate = ISHIHARA_SEQUENCE[currentPlateIndex];
       const isCorrect = String(response) === String(plate.correctDigit);
-      
-      const newResponse = {
-        plateId: plate.id,
-        response,
-        correct: isCorrect
-      };
-      
+      const newResponse = { plateId: plate.id, response, correct: isCorrect };
       setUserResponses(prev => [...prev.filter(r => r.plateId !== plate.id), newResponse]);
       toast.success(`Plate ${plate.id} captured: ${response}`, { duration: 1000 });
-      
-      // Auto-advance if response received (optional, usually better to wait full 6s)
     }
   };
 
@@ -211,353 +190,220 @@ export default function ScanConsole() {
   const finishColorTest = () => {
     if (recognitionRef.current) recognitionRef.current.stop();
     setColorTestActive(false);
-    
     const correctCount = userResponses.filter(r => r.correct).length;
     const verdict = calculateCPVerdict(correctCount, ISHIHARA_SEQUENCE.length);
-    
     const resultString = `CV Standard: ${verdict} (${correctCount}/${ISHIHARA_SEQUENCE.length} correct)`;
-    setMeasured(resultString);
-    setStatus(verdict === 'CP-I' || verdict === 'CP-II' ? 'FIT' : 'UNFIT');
-    setNotes(`Automated CP-Matrix Test completed. Captured digits: ${userResponses.map(r => r.response).join(', ')}`);
-    setHasCaptured(true);
-    toast.success("Assessment Complete. Result pushed to console.");
+    handleTestComplete('COLOUR_VISION', {
+      value: resultString,
+      status: verdict === 'CP-I' || verdict === 'CP-II' ? 'FIT' : 'UNFIT',
+      raw: `Colour Vision: ${verdict}. ${correctCount}/${ISHIHARA_SEQUENCE.length} plates correct.`,
+    });
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center font-sans font-bold text-xs uppercase tracking-widest text-primary animate-breathe">
-        SYNCING
-      </div>
-    );
-  }
-  if (!user) { navigate("/auth"); return null; }
-
-  const scheme = profile?.entry_scheme;
-  const service = profile?.target_service;
-  const key = scheme && service ? `${scheme}-${service}` : null;
-  const candBmi = bmi(profile?.height_cm, profile?.weight_kg);
-
-  const submitResult = async () => {
-    if (!measured.trim()) { toast.error("Enter measured value"); return; }
-    setSubmitting(true);
-    const { data, error } = await supabase
-      .from("assessment_results")
-      .insert({
-        user_id: user.id,
-        parameter: param,
-        measured_value: measured,
-        status,
-        notes,
-      })
-      .select()
-      .single();
-    setSubmitting(false);
-    if (error) { toast.error(error.message); return; }
-    setResults([data, ...results]);
-    setMeasured("");
-    setNotes("");
-    toast.success(`Result recorded: ${param} -> ${status}`);
-  };
+  // ── End CP-Matrix ─────────────────────────────────────────────
 
   return (
     <AppShell candidateBadge={profile ? {
-      name: profile.full_name, code: profile.candidate_code, service, scheme,
+      name: profile.full_name, code: profile.candidate_code,
+      service: profile.target_service, scheme: profile.entry_scheme,
     } : null}>
       <div className="container py-8">
-        <div className="mb-6">
-          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3 text-center">
-            MODULE C : BIOMETRIC ASSESSMENT
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="font-sans font-bold text-[10px] uppercase tracking-[0.3em] text-primary mb-3">
+            MODULE C : COMPREHENSIVE ASSESSMENT
           </div>
-          <h1 className="font-display text-4xl md:text-5xl text-foreground mb-2 text-center tracking-tight">Assessment Theatre</h1>
-          <p className="text-center text-sm text-muted-foreground font-medium max-w-lg mx-auto">
-            Real-time biometric analysis active. Establish coordinate lock for parameter capture.
+          <h1 className="font-display text-4xl md:text-5xl text-foreground mb-2 tracking-tight">
+            Assessment Theatre
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+            Complete self-assessable tests below. Parameters requiring clinical equipment are listed for Command Hospital referral.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-6">
-          {/* Scan card */}
-          <div className="lg:col-span-8 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-panel-strong p-6 relative"
-            >
-              <div className="aspect-video bg-black/40 border border-primary/20 rounded-sm mb-5 relative overflow-hidden group">
-                {/* Camera Viewport */}
-                <video 
-                  ref={videoRef}
-                  autoPlay 
-                  playsInline 
-                  className={`w-full h-full object-cover transition-opacity duration-500 ${cameraActive ? 'opacity-100' : 'opacity-0'}`}
-                />
-                
-                {/* Standby UI */}
-                {!cameraActive && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-tactical-200/80 backdrop-blur-sm z-10">
-                    <Camera size={48} className="text-primary/40 mb-4 animate-pulse" />
-                    <div className="font-sans font-bold text-xs uppercase tracking-[0.3em] text-primary/60">
-                      System Standby
-                    </div>
-                  </div>
-                )}
-
-                {/* Analytical Overlays */}
-                <AnimatePresence>
-                  {cameraActive && (
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute inset-0 pointer-events-none z-20"
-                    >
-                      {/* Grid / Scanning effect */}
-                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/grid.png')] opacity-10" />
-                      
-                      {/* Horizon & Vertical markers */}
-                      <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-primary/20" />
-                      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-primary/20" />
-                      
-                      {/* Detection Frame */}
-                      <div className="absolute top-[10%] left-[25%] right-[25%] bottom-[10%] border border-primary/40 rounded-sm">
-                        <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-primary shadow-glow-gold" />
-                        <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-primary shadow-glow-gold" />
-                        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-primary shadow-glow-gold" />
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-primary shadow-glow-gold" />
-                        
-                        {/* Scanning Bar */}
-                        {isScanning && (
-                          <motion.div 
-                            initial={{ top: "0%" }}
-                            animate={{ top: "100%" }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                            className="absolute left-0 right-0 h-0.5 bg-primary shadow-glow-gold"
-                          />
-                        )}
-                      </div>
-
-                      {/* AI Indicators */}
-                      <div className="absolute top-4 left-4 font-mono-tac text-[9px] uppercase tracking-widest text-primary/80 space-y-1">
-                        <div>LINKED: SECURE_CORE_ALPHA</div>
-                        <div>FRAME: {Math.floor(Math.random()*1000)} / 60FPS</div>
-                        <div className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                          BIOMETRIC_STREAM_LIVE
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="flex flex-wrap gap-3 mb-6">
-                {param === "Colour Vision" ? (
-                  /* Colour Vision uses PDF Ishihara plates — no camera needed */
-                  <Button 
-                    onClick={() => startColorTest()}
-                    className="w-full bg-black/40 border border-primary/20 hover:bg-black/60 font-sans font-bold uppercase text-[10px] tracking-widest h-12 gap-2"
-                  >
-                    <FileText size={14} className="text-primary" />
-                    {hasCaptured ? "Re-Test Colour Vision" : "Launch CP-Matrix (Ishihara Plates)"}
-                  </Button>
-                ) : (
-                  /* All other parameters use camera-based AI scan */
-                  <>
-                    <Button 
-                      onClick={toggleCamera} 
-                      variant={cameraActive ? "destructive" : "outline"}
-                      className="font-sans font-bold text-[10px] uppercase tracking-widest h-10 px-6 gap-2"
-                    >
-                      <Power size={14} />
-                      {cameraActive ? "Deactivate Camera" : "Initialise Biometrics"}
-                    </Button>
-                    
-                    {cameraActive && (
-                      <Button 
-                        onClick={startAiScan}
-                        disabled={!cameraActive || isScanning}
-                        className="w-full bg-black/40 border border-primary/20 hover:bg-black/60 font-sans font-bold uppercase text-[10px] tracking-widest h-12"
-                      >
-                        {isScanning ? (
-                          <>Analysing...</>
-                        ) : hasCaptured ? (
-                          <>Re-Test Parameter</>
-                        ) : (
-                          <>
-                            <Activity size={14} className="mr-2 text-primary" /> Capture AI Measurement
-                          </>
-                        )}
-                      </Button>
-                    )}
-                  </>
-                )}
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-5 pt-4 border-t border-primary/10">
-                <div className="space-y-3">
-                  <Label className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <span className="w-1 h-1 rounded-full bg-primary/40" />
-                    Target Parameter
-                  </Label>
-                  <Select value={param} onValueChange={setParam}>
-                    <SelectTrigger className="bg-background/40 border-primary/20"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {PARAMETERS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-3">
-                  <Label className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <span className="w-1 h-1 rounded-full bg-primary/40" />
-                    Verdict Status
-                  </Label>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger className="bg-background/40 border-primary/20"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-3 md:col-span-2">
-                  <Label className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <span className="w-1 h-1 rounded-full bg-primary/40" />
-                    {(() => {
-                      const labels: Record<string, string> = {
-                        "Height": "Validated Measured Value",
-                        "Weight (BMI)": "Validated Measured Value",
-                        "Chest Expansion": "Validated Measured Value",
-                        "Vision (Acuity)": "Vision Acuity Reading",
-                        "Colour Vision": "Colour Perception Grade",
-                        "Myopia / Refraction": "Refraction Value",
-                        "Hearing": "Hearing Assessment",
-                        "ENT (DNS/Ear)": "ENT Observation",
-                        "Spine (LS-Spine/X-Ray)": "X-Ray Findings",
-                        "Blood (Hb/HPLC)": "Haematology Result",
-                        "USG (Abd/Gyno)": "USG Findings",
-                        "Posture / Gait": "Postural Assessment",
-                        "Skin Condition": "Derma Observation",
-                      };
-                      return labels[param] || "Validated Measured Value";
-                    })()}
-                  </Label>
-                  <Input 
-                    value={measured} 
-                    onChange={(e) => setMeasured(e.target.value)} 
-                    placeholder={(() => {
-                      const placeholders: Record<string, string> = {
-                        "Height": "e.g. 168.4 cm",
-                        "Weight (BMI)": "e.g. 72.5 kg",
-                        "Chest Expansion": "e.g. 5 cm (77-82)",
-                        "Vision (Acuity)": "e.g. 6/6 Distant, 6/9 Near",
-                        "Colour Vision": "e.g. CP-I (6/6 correct)",
-                        "Myopia / Refraction": "e.g. -1.25D (Stable)",
-                        "Hearing": "e.g. 6/6 Bilateral",
-                        "ENT (DNS/Ear)": "e.g. Clear / Mild DNS",
-                        "Spine (LS-Spine/X-Ray)": "e.g. Normal / LSTB Detected",
-                        "Blood (Hb/HPLC)": "e.g. Hb 14.2 g/dL, HbA2 2.1%",
-                        "USG (Abd/Gyno)": "e.g. Normal Study / Cyst Noted",
-                        "Posture / Gait": "e.g. Normal / Knock Knee Gr.I",
-                        "Skin Condition": "e.g. Clear / Hyperhidrosis",
-                      };
-                      return placeholders[param] || "Enter measured value";
-                    })()}
-                    className="bg-background/40 border-primary/20 h-11 font-sans font-bold"
-                  />
-                </div>
-                <div className="space-y-3 md:col-span-2">
-                  <Label className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <span className="w-1 h-1 rounded-full bg-primary/40" />
-                    Observations (Diagnostic Notes)
-                  </Label>
-                  <Textarea 
-                    rows={3} 
-                    value={notes} 
-                    onChange={(e) => setNotes(e.target.value)} 
-                    className="bg-background/40 border-primary/20 resize-none font-sans"
-                    placeholder="Enter analytical observations..."
-                  />
-                </div>
-              </div>
-
-              <Button
-                onClick={submitResult}
-                disabled={submitting}
-                variant="liquid-glass"
-                className="w-full mt-6 font-sans font-bold uppercase text-[11px] tracking-[0.2em] h-12 shadow-glow-gold"
-              >
-                AUTHORISE AND RECORD RESULT
-              </Button>
-            </motion.div>
-
-            {/* Results log */}
-            <div className="glass-panel p-6">
-              <div className="font-sans font-bold text-xs uppercase tracking-widest text-primary mb-5 flex items-center justify-between">
-                <span>Assessment History ({results.length})</span>
-                <Maximize2 size={14} className="text-muted-foreground opacity-50" />
-              </div>
-              {results.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-primary/10 rounded-sm">
-                  <p className="text-sm text-muted-foreground">Analytic records for this candidate are currently void.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {results.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between p-4 bg-background/30 border border-primary/5 rounded-sm hover:border-primary/20 transition-all">
-                      <div>
-                        <div className="text-[15px] font-sans font-bold text-foreground">{r.parameter}</div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5 uppercase tracking-wider">{r.measured_value} | {new Date(r.created_at).toLocaleDateString()}</div>
-                      </div>
-                      <StatusBadge status={r.status} />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+        {/* Progress Bar */}
+        <div className="glass-panel p-5 mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <span className="font-sans font-bold text-[10px] uppercase tracking-widest text-primary">
+              Self-Assessment Progress
+            </span>
+            <span className="font-display text-lg text-primary">
+              {completedCount}/{totalSelfTests}
+            </span>
           </div>
-
-          {/* Standards Panel */}
-          <aside className="lg:col-span-4 space-y-6">
-            <div className="glass-panel p-6 h-fit lg:sticky lg:top-24">
-              <div className="font-sans font-bold text-xs uppercase tracking-widest text-primary mb-4">
-                AFMS REFERENCE STANDARDS
-              </div>
-              <div className="p-3 bg-card/60 border border-primary/10 rounded-sm mb-6">
-                <div className="text-[10px] font-sans font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                  Profile Parameters
-                </div>
-                <div className="text-sm font-sans text-foreground">
-                  {scheme && service ? `${scheme} / ${service.replace("_", " ")}` : "Select service in intake"}
-                </div>
-              </div>
-              
-              {candBmi !== null && (
-                <div className="mb-6 p-4 border border-primary/10 rounded-sm bg-background/20">
-                  <div className="text-[10px] font-sans font-bold uppercase text-muted-foreground mb-1">Current BMI Metric</div>
-                  <div className={`text-2xl font-display ${candBmi < 18.5 || candBmi > 25 ? "text-warning" : "text-primary text-glow-gold"}`}>{candBmi}</div>
-                </div>
-              )}
-              
-              <div className="space-y-4">
-                {AFMS_STANDARDS.map((s) => (
-                  <div key={s.parameter} className="border-b border-primary/5 pb-3 last:border-0">
-                    <div className="text-sm font-sans font-bold text-foreground/90">{s.parameter}</div>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-[11px] text-muted-foreground">Requirement</span>
-                      <span className="text-[11px] font-sans font-bold text-primary">
-                        {key && s.thresholds[key] ? `${s.thresholds[key]} ${s.unit}` : "REF REQ"}
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-destructive/70 mt-1 italic opacity-80 font-light">
-                      Automatic Rejection Trigger: {s.rejectTrigger}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </aside>
+          <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-primary rounded-full shadow-glow-gold"
+              initial={{ width: 0 }}
+              animate={{ width: `${(completedCount / totalSelfTests) * 100}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
         </div>
+
+        {/* TIER 1: Self-Assessment Tests */}
+        <div className="mb-6">
+          <div className="font-sans font-bold text-[10px] uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+            <Activity size={14} />
+            Self-Assessment Tests
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {SELF_TESTS.map((test, i) => (
+              <motion.div
+                key={test.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <TestCard
+                  test={test}
+                  status={getTestStatus(test.id)}
+                  result={testResults[test.id]}
+                  onLaunch={() => launchTest(test.id)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* TIER 2: Clinical Referrals */}
+        <div className="mb-8">
+          <div className="font-sans font-bold text-[10px] uppercase tracking-widest text-destructive/70 mb-4 flex items-center gap-2">
+            <Hospital size={14} />
+            Clinical Referral Required
+          </div>
+          <div className="glass-panel p-5 space-y-3">
+            <p className="text-xs text-muted-foreground mb-4">
+              These parameters require clinical equipment. Visit your nearest Command Hospital
+              or Regimental Regimented for these evaluations.
+            </p>
+            <div className="grid md:grid-cols-2 gap-3">
+              {CLINICAL_REFERRALS.map(ref => (
+                <div key={ref.id} className="flex items-center gap-3 p-3 bg-background/30 border border-primary/5 rounded-sm">
+                  <ref.icon size={16} className="text-muted-foreground/50 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-sans font-bold text-foreground truncate">{ref.name}</div>
+                    <div className="text-[9px] text-muted-foreground">{ref.referralDept}</div>
+                  </div>
+                  <MapPin size={12} className="text-primary/40 flex-shrink-0" />
+                </div>
+              ))}
+            </div>
+            <Button
+              onClick={() => navigate('/hospitals')}
+              variant="outline"
+              className="w-full mt-4 font-sans font-bold uppercase text-[10px] tracking-widest border-primary/20"
+            >
+              <MapPin size={14} className="mr-2" /> Find Nearest Command Hospital
+            </Button>
+          </div>
+        </div>
+
+        {/* Assessment Summary / Download */}
+        {completedCount >= 3 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-panel-strong p-6 text-center"
+          >
+            <div className="font-sans font-bold text-[10px] uppercase tracking-widest text-primary mb-3">
+              Assessment Summary Available
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              {completedCount} of {totalSelfTests} self-assessments completed.
+              Generate your preliminary fitness report.
+            </p>
+            <Button
+              onClick={() => navigate('/dashboard')}
+              variant="liquid-glass"
+              className="font-sans font-bold uppercase text-[11px] tracking-widest h-12 shadow-glow-gold"
+            >
+              <Download size={16} className="mr-2" /> Go to Dashboard for Report
+            </Button>
+          </motion.div>
+        )}
       </div>
 
-      {/* Ishihara CP-Matrix Tactical Overlay */}
+      {/* ═══════════════════════════════════════════════
+          TEST OVERLAYS
+          ═══════════════════════════════════════════════ */}
+
+      <AnimatePresence>
+        {/* Pose Tests */}
+        {activeTest === 'CARRY_ANGLE' && standards && (
+          <PoseTest
+            testType="CARRY_ANGLE"
+            maxThreshold={standards.orthopaedic.carryAngle.maxDegrees}
+            gender={gender}
+            onComplete={(r) => handleTestComplete('CARRY_ANGLE', r)}
+            onClose={() => setActiveTest(null)}
+          />
+        )}
+        {activeTest === 'KNOCK_KNEE' && standards && (
+          <PoseTest
+            testType="KNOCK_KNEE"
+            maxThreshold={standards.orthopaedic.genuValgum.maxInterMalleolarDistanceCm}
+            gender={gender}
+            onComplete={(r) => handleTestComplete('KNOCK_KNEE', r)}
+            onClose={() => setActiveTest(null)}
+          />
+        )}
+
+        {/* Vision Test */}
+        {activeTest === 'VISION_ACUITY' && standards && (
+          <SnellenTest
+            requiredAcuity={standards.ophthalmological.visualAcuity.betterEyeUncorrected}
+            onComplete={(r) => handleTestComplete('VISION_ACUITY', r)}
+            onClose={() => setActiveTest(null)}
+          />
+        )}
+
+        {/* Hearing Test */}
+        {activeTest === 'HEARING' && standards && (
+          <HearingTest
+            maxAllowedDb={standards.audiological.pureToneAudiometry.maxDbHL}
+            onComplete={(r) => handleTestComplete('HEARING', r)}
+            onClose={() => setActiveTest(null)}
+          />
+        )}
+
+        {/* Anthropometric Input */}
+        {activeTest === 'ANTHROPOMETRIC' && standards && (
+          <AnthropometricInput
+            minHeight={standards.anthropometric.minHeightCm}
+            minChestExpansion={standards.anthropometric.chestExpansionMinCm}
+            bmiRange={standards.anthropometric.bmiRangeAllowed}
+            gender={gender}
+            onComplete={(r) => handleTestComplete('ANTHROPOMETRIC', r)}
+            onClose={() => setActiveTest(null)}
+          />
+        )}
+
+        {/* Tremor Test */}
+        {activeTest === 'TREMOR' && (
+          <TremorTest
+            onComplete={(r) => handleTestComplete('TREMOR', r)}
+            onClose={() => setActiveTest(null)}
+          />
+        )}
+
+        {/* Self Assessment */}
+        {activeTest === 'SELF_REPORT' && (
+          <SelfAssessment
+            onComplete={(r) => handleTestComplete('SELF_REPORT', r)}
+            onClose={() => setActiveTest(null)}
+          />
+        )}
+
+        {/* Flat Foot → redirects to self assessment */}
+        {activeTest === 'FLAT_FOOT' && (
+          <SelfAssessment
+            onComplete={(r) => handleTestComplete('FLAT_FOOT', r)}
+            onClose={() => setActiveTest(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* CP-Matrix Ishihara Overlay (existing) */}
       <AnimatePresence>
         {colorTestActive && (
           <motion.div
@@ -590,11 +436,15 @@ export default function ScanConsole() {
 
             <div className="max-w-2xl w-full text-center space-y-8">
               <div className="space-y-2">
-                <div className="font-sans font-bold text-[10px] uppercase tracking-[0.4em] text-primary">Module C : Colour Perception Matrix</div>
-                <h2 className="text-3xl font-display tracking-tight text-foreground">Ishihara Plate {currentPlateIndex + 1} / {ISHIHARA_SEQUENCE.length}</h2>
+                <div className="font-sans font-bold text-[10px] uppercase tracking-[0.4em] text-primary">
+                  Module C : Colour Perception Matrix
+                </div>
+                <h2 className="text-3xl font-display tracking-tight text-foreground">
+                  Ishihara Plate {currentPlateIndex + 1} / {ISHIHARA_SEQUENCE.length}
+                </h2>
               </div>
 
-              <motion.div 
+              <motion.div
                 key={currentPlateIndex}
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -603,20 +453,11 @@ export default function ScanConsole() {
                 <div className="pdf-plate-container scale-[1.1]">
                   <Document
                     file="/assets/ishihara/Ishihara_Tests.pdf"
-                    loading={
-                      <div className="flex flex-col items-center gap-2">
-                        <Activity className="animate-spin text-primary" size={32} />
-                        <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-primary/60">Loading Plate...</span>
-                      </div>
-                    }
-                    error={
-                      <div className="text-destructive font-sans font-bold text-xs">
-                        FILE_ERROR: Unable to render evaluation plate.
-                      </div>
-                    }
+                    loading={<Activity className="animate-spin text-primary" size={32} />}
+                    error={<div className="text-destructive font-sans font-bold text-xs">FILE_ERROR</div>}
                   >
-                    <Page 
-                      pageNumber={ISHIHARA_SEQUENCE[currentPlateIndex].pageNumber} 
+                    <Page
+                      pageNumber={ISHIHARA_SEQUENCE[currentPlateIndex].pageNumber}
                       width={400}
                       renderTextLayer={false}
                       renderAnnotationLayer={false}
@@ -624,40 +465,17 @@ export default function ScanConsole() {
                     />
                   </Document>
                 </div>
-                
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-8">
-                  <p className="text-[10px] font-sans font-bold uppercase tracking-widest text-white/60">State visible digit clearly</p>
-                </div>
               </motion.div>
 
               <div className="grid grid-cols-6 gap-2 max-w-sm mx-auto">
                 {ISHIHARA_SEQUENCE.map((_, i) => (
-                  <div 
-                    key={i} 
-                    className={`h-1 rounded-full transition-all duration-500 ${i === currentPlateIndex ? 'bg-primary w-full' : i < currentPlateIndex ? 'bg-primary/40' : 'bg-white/10'}`} 
-                  />
+                  <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === currentPlateIndex ? 'bg-primary w-full' : i < currentPlateIndex ? 'bg-primary/40' : 'bg-white/10'}`} />
                 ))}
               </div>
 
-              <div className="pt-8">
-                <Button 
-                  variant="outline" 
-                  onClick={() => finishColorTest()}
-                  className="font-sans font-bold text-[10px] uppercase tracking-widest border-primary/20 hover:bg-primary/10"
-                >
-                  Terminate Assessment Early
-                </Button>
-              </div>
-            </div>
-
-            {/* Tactical Scanning Background for Overlay */}
-            <div className="absolute inset-0 pointer-events-none opacity-5 overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-[1px] bg-primary animate-[scan_4s_linear_infinite]" />
-              <div className="grid grid-cols-12 h-full w-full">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="border-r border-primary/10 h-full" />
-                ))}
-              </div>
+              <Button variant="outline" onClick={finishColorTest} className="font-sans font-bold text-[10px] uppercase tracking-widest border-primary/20 hover:bg-primary/10">
+                Terminate Assessment Early
+              </Button>
             </div>
           </motion.div>
         )}
@@ -666,19 +484,62 @@ export default function ScanConsole() {
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const map: any = {
-    FIT: { Icon: ShieldCheck, color: "text-primary border-primary/30 bg-primary/5" },
-    UNFIT: { Icon: ShieldX, color: "text-destructive border-destructive/30 bg-destructive/5" },
-    BORDERLINE: { Icon: ShieldAlert, color: "text-warning border-warning/30 bg-warning/5" },
-    INCONCLUSIVE: { Icon: ShieldAlert, color: "text-muted-foreground border-border bg-muted/20" },
-  };
-  const { Icon, color } = map[status] || map.INCONCLUSIVE;
+// ─── Test Card Component ──────────────────────────────────────
+
+function TestCard({
+  test, status, result, onLaunch,
+}: {
+  test: TestConfig; status: TestStatus; result?: TestResult; onLaunch: () => void;
+}) {
+  const Icon = test.icon;
+  const isCompleted = status === 'COMPLETED';
+
+  const statusBadge = {
+    NOT_STARTED: { icon: Circle, color: 'text-muted-foreground/30', label: 'Not Started' },
+    IN_PROGRESS: { icon: Activity, color: 'text-primary animate-pulse', label: 'In Progress' },
+    COMPLETED: {
+      icon: result?.status === 'FIT' ? ShieldCheck : result?.status === 'BORDERLINE' ? ShieldAlert : ShieldX,
+      color: result?.status === 'FIT' ? 'text-green-400' : result?.status === 'BORDERLINE' ? 'text-yellow-400' : 'text-red-400',
+      label: result?.status || 'Done',
+    },
+    SKIPPED: { icon: Circle, color: 'text-muted-foreground/30', label: 'Skipped' },
+  }[status];
+
   return (
-    <div className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-sm font-sans font-bold text-[10px] uppercase tracking-widest transition-all ${color}`}>
-      <Icon size={12} />
-      {status}
+    <div className={`glass-panel p-5 flex flex-col h-full transition-all hover:border-primary/20 ${isCompleted ? 'border-primary/10' : ''}`}>
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-10 h-10 rounded-sm border border-primary/10 flex items-center justify-center bg-background/40">
+          <Icon size={18} className="text-primary" />
+        </div>
+        <div className={`flex items-center gap-1.5 ${statusBadge.color}`}>
+          <statusBadge.icon size={14} />
+          <span className="font-sans font-bold text-[9px] uppercase tracking-widest">{statusBadge.label}</span>
+        </div>
+      </div>
+
+      <div className="flex-1">
+        <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-foreground mb-1">{test.shortName}</h3>
+        <p className="text-[11px] text-muted-foreground leading-relaxed mb-2">{test.description}</p>
+        <div className="flex items-center gap-3 text-[9px] text-muted-foreground/60">
+          <span className="flex items-center gap-1"><Clock size={10} /> {test.duration}</span>
+          <span className="uppercase tracking-wider">{test.method.replace('_', ' ')}</span>
+        </div>
+      </div>
+
+      {result && (
+        <div className="mt-3 p-2 bg-background/30 border border-primary/5 rounded-sm">
+          <div className="text-[10px] font-sans font-bold text-foreground truncate">{result.value}</div>
+        </div>
+      )}
+
+      <Button
+        onClick={onLaunch}
+        variant={isCompleted ? "outline" : "liquid-glass"}
+        className="w-full mt-4 font-sans font-bold uppercase text-[10px] tracking-widest h-10"
+      >
+        {isCompleted ? 'Re-Test' : 'Start Test'}
+        <ChevronRight size={14} className="ml-1" />
+      </Button>
     </div>
   );
 }
-
