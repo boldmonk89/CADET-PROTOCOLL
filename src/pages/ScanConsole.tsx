@@ -10,12 +10,22 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AFMS_STANDARDS, bmi } from "@/lib/cadet-data";
+import { ISHIHARA_SEQUENCE, calculateCPVerdict } from "@/lib/color-vision";
+import { Document, Page, pdfjs } from "react-pdf";
 import { toast } from "sonner";
-import { Camera, ShieldCheck, ShieldAlert, ShieldX, Power, Activity, Maximize2 } from "lucide-react";
+import { Camera, ShieldCheck, ShieldAlert, ShieldX, Power, Activity, Maximize2, Mic, MicOff, Timer, FileText } from "lucide-react";
+
+// PDF.js Worker Configuration
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+// CSS Imports for PDF layers
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
 const PARAMETERS = [
   "Height", "Weight (BMI)", "Chest Expansion", "Vision (Acuity)",
-  "Colour Vision", "Hearing", "Posture / Gait", "Skin Condition",
+  "Colour Vision", "Myopia / Refraction", "Hearing", "ENT (DNS/Ear)", 
+  "Spine (LS-Spine/X-Ray)", "Blood (Hb/HPLC)", "USG (Abd/Gyno)", "Posture / Gait", "Skin Condition",
 ];
 
 const STATUSES = ["FIT", "BORDERLINE", "UNFIT", "INCONCLUSIVE"] as const;
@@ -37,6 +47,14 @@ export default function ScanConsole() {
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  // CP-Matrix (Color Vision) State
+  const [colorTestActive, setColorTestActive] = useState(false);
+  const [currentPlateIndex, setCurrentPlateIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(6);
+  const [userResponses, setUserResponses] = useState<any[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -73,6 +91,13 @@ export default function ScanConsole() {
 
   const startAiScan = () => {
     if (!cameraActive) return;
+    
+    // If target is Color Vision, launch the dedicated CP-Matrix module
+    if (param === "Colour Vision") {
+      startColorTest();
+      return;
+    }
+
     setIsScanning(true);
     setHasCaptured(false);
     toast.info("Initialising CV Analysis Engine...");
@@ -87,14 +112,23 @@ export default function ScanConsole() {
         case "Hearing":
           result = Math.random() > 0.3 ? "HEARING: 6/6 OPTIMAL (CP-I)" : "HEARING: TRACE DEFICIT (CP-II)";
           break;
-        case "Vision":
+        case "Myopia / Refraction":
+          result = Math.random() > 0.5 ? "REFRACTION: -1.25D (STABLE)" : "REFRACTION: -4.50D (EXCEEDS_LIMIT)";
+          break;
+        case "ENT (DNS/Ear)":
+          result = Math.random() > 0.6 ? "ENT: CLEAR" : "ENT: MILD DNS (TR_RECOMMENDED)";
+          break;
+        case "Spine (LS-Spine/X-Ray)":
+          result = "X-RAY_LS: " + (Math.random() > 0.5 ? "NORMAL" : "BONY_SKELETON_DEFECT (PR)");
+          break;
+        case "Vision (Acuity)":
           result = Math.random() > 0.5 ? "VISION: 6/6 DISTANT" : "VISION: 6/9 MILD ACUITY";
           break;
-        case "Weight":
+        case "Weight (BMI)":
           result = (50 + Math.random() * 40).toFixed(1) + " kg";
           break;
         default:
-          result = "POSTURE: " + (Math.random() > 0.5 ? "OPTIMAL" : "SLIGHT KYPHOSIS");
+          result = "SCAN: " + (Math.random() > 0.5 ? "OPTIMAL" : "REVIEW REQUIRED");
       }
       
       setMeasured(result);
@@ -102,6 +136,91 @@ export default function ScanConsole() {
       setHasCaptured(true);
       toast.success("Parameter accurately captured via Computer Vision.");
     }, 3500);
+  };
+
+  // CP-Matrix Logic
+  const startColorTest = () => {
+    setColorTestActive(true);
+    setCurrentPlateIndex(0);
+    setTimeLeft(6);
+    setUserResponses([]);
+    toast.info("CP-Matrix Initialization: Hand-free voice mode active.");
+    initSpeechRecognition();
+  };
+
+  const initSpeechRecognition = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error("Voice recognition not supported in this browser.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+      console.log("Voice Captured:", transcript);
+      handleVoiceResponse(transcript);
+    };
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const handleVoiceResponse = (text: string) => {
+    // Basic number extraction or 'nothing'
+    const match = text.match(/\d+/) || (text.includes('nothing') ? ['nothing'] : null);
+    if (match) {
+      const response = match[0];
+      const plate = ISHIHARA_SEQUENCE[currentPlateIndex];
+      const isCorrect = String(response) === String(plate.correctDigit);
+      
+      const newResponse = {
+        plateId: plate.id,
+        response,
+        correct: isCorrect
+      };
+      
+      setUserResponses(prev => [...prev.filter(r => r.plateId !== plate.id), newResponse]);
+      toast.success(`Plate ${plate.id} captured: ${response}`, { duration: 1000 });
+      
+      // Auto-advance if response received (optional, usually better to wait full 6s)
+    }
+  };
+
+  useEffect(() => {
+    let interval: any;
+    if (colorTestActive && timeLeft > 0) {
+      interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    } else if (colorTestActive && timeLeft === 0) {
+      if (currentPlateIndex < ISHIHARA_SEQUENCE.length - 1) {
+        setCurrentPlateIndex(idx => idx + 1);
+        setTimeLeft(6);
+      } else {
+        finishColorTest();
+      }
+    }
+    return () => clearInterval(interval);
+  }, [colorTestActive, timeLeft, currentPlateIndex]);
+
+  const finishColorTest = () => {
+    if (recognitionRef.current) recognitionRef.current.stop();
+    setColorTestActive(false);
+    
+    const correctCount = userResponses.filter(r => r.correct).length;
+    const verdict = calculateCPVerdict(correctCount, ISHIHARA_SEQUENCE.length);
+    
+    const resultString = `CV Standard: ${verdict} (${correctCount}/${ISHIHARA_SEQUENCE.length} correct)`;
+    setMeasured(resultString);
+    setStatus(verdict === 'CP-I' || verdict === 'CP-II' ? 'FIT' : 'UNFIT');
+    setNotes(`Automated CP-Matrix Test completed. Captured digits: ${userResponses.map(r => r.response).join(', ')}`);
+    setHasCaptured(true);
+    toast.success("Assessment Complete. Result pushed to console.");
   };
 
   if (loading) return null;
@@ -225,31 +344,45 @@ export default function ScanConsole() {
               </div>
 
               <div className="flex flex-wrap gap-3 mb-6">
-                <Button 
-                  onClick={toggleCamera} 
-                  variant={cameraActive ? "destructive" : "outline"}
-                  className="font-sans font-bold text-[10px] uppercase tracking-widest h-10 px-6 gap-2"
-                >
-                  <Power size={14} />
-                  {cameraActive ? "Deactivate Camera" : "Initialise Biometrics"}
-                </Button>
-                
-                {cameraActive && (
+                {param === "Colour Vision" ? (
+                  /* Colour Vision uses PDF Ishihara plates — no camera needed */
                   <Button 
-                    onClick={startAiScan}
-                    disabled={!cameraActive || isScanning}
-                    className="w-full bg-black/40 border border-primary/20 hover:bg-black/60 font-sans font-bold uppercase text-[10px] tracking-widest h-12"
+                    onClick={() => startColorTest()}
+                    className="w-full bg-black/40 border border-primary/20 hover:bg-black/60 font-sans font-bold uppercase text-[10px] tracking-widest h-12 gap-2"
                   >
-                    {isScanning ? (
-                      <>Analysing...</>
-                    ) : hasCaptured ? (
-                      <>Re-Test Parameter</>
-                    ) : (
-                      <>
-                        <Activity size={14} className="mr-2 text-primary" /> Capture AI Measurement
-                      </>
-                    )}
+                    <FileText size={14} className="text-primary" />
+                    {hasCaptured ? "Re-Test Colour Vision" : "Launch CP-Matrix (Ishihara Plates)"}
                   </Button>
+                ) : (
+                  /* All other parameters use camera-based AI scan */
+                  <>
+                    <Button 
+                      onClick={toggleCamera} 
+                      variant={cameraActive ? "destructive" : "outline"}
+                      className="font-sans font-bold text-[10px] uppercase tracking-widest h-10 px-6 gap-2"
+                    >
+                      <Power size={14} />
+                      {cameraActive ? "Deactivate Camera" : "Initialise Biometrics"}
+                    </Button>
+                    
+                    {cameraActive && (
+                      <Button 
+                        onClick={startAiScan}
+                        disabled={!cameraActive || isScanning}
+                        className="w-full bg-black/40 border border-primary/20 hover:bg-black/60 font-sans font-bold uppercase text-[10px] tracking-widest h-12"
+                      >
+                        {isScanning ? (
+                          <>Analysing...</>
+                        ) : hasCaptured ? (
+                          <>Re-Test Parameter</>
+                        ) : (
+                          <>
+                            <Activity size={14} className="mr-2 text-primary" /> Capture AI Measurement
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -281,12 +414,46 @@ export default function ScanConsole() {
                 <div className="space-y-3 md:col-span-2">
                   <Label className="font-sans font-bold text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <span className="w-1 h-1 rounded-full bg-primary/40" />
-                    Validated Measured Value
+                    {(() => {
+                      const labels: Record<string, string> = {
+                        "Height": "Validated Measured Value",
+                        "Weight (BMI)": "Validated Measured Value",
+                        "Chest Expansion": "Validated Measured Value",
+                        "Vision (Acuity)": "Vision Acuity Reading",
+                        "Colour Vision": "Colour Perception Grade",
+                        "Myopia / Refraction": "Refraction Value",
+                        "Hearing": "Hearing Assessment",
+                        "ENT (DNS/Ear)": "ENT Observation",
+                        "Spine (LS-Spine/X-Ray)": "X-Ray Findings",
+                        "Blood (Hb/HPLC)": "Haematology Result",
+                        "USG (Abd/Gyno)": "USG Findings",
+                        "Posture / Gait": "Postural Assessment",
+                        "Skin Condition": "Derma Observation",
+                      };
+                      return labels[param] || "Validated Measured Value";
+                    })()}
                   </Label>
                   <Input 
                     value={measured} 
                     onChange={(e) => setMeasured(e.target.value)} 
-                    placeholder="e.g. 168.4 cm" 
+                    placeholder={(() => {
+                      const placeholders: Record<string, string> = {
+                        "Height": "e.g. 168.4 cm",
+                        "Weight (BMI)": "e.g. 72.5 kg",
+                        "Chest Expansion": "e.g. 5 cm (77-82)",
+                        "Vision (Acuity)": "e.g. 6/6 Distant, 6/9 Near",
+                        "Colour Vision": "e.g. CP-I (6/6 correct)",
+                        "Myopia / Refraction": "e.g. -1.25D (Stable)",
+                        "Hearing": "e.g. 6/6 Bilateral",
+                        "ENT (DNS/Ear)": "e.g. Clear / Mild DNS",
+                        "Spine (LS-Spine/X-Ray)": "e.g. Normal / LSTB Detected",
+                        "Blood (Hb/HPLC)": "e.g. Hb 14.2 g/dL, HbA2 2.1%",
+                        "USG (Abd/Gyno)": "e.g. Normal Study / Cyst Noted",
+                        "Posture / Gait": "e.g. Normal / Knock Knee Gr.I",
+                        "Skin Condition": "e.g. Clear / Hyperhidrosis",
+                      };
+                      return placeholders[param] || "Enter measured value";
+                    })()}
                     className="bg-background/40 border-primary/20 h-11 font-sans font-bold"
                   />
                 </div>
@@ -383,6 +550,112 @@ export default function ScanConsole() {
           </aside>
         </div>
       </div>
+
+      {/* Ishihara CP-Matrix Tactical Overlay */}
+      <AnimatePresence>
+        {colorTestActive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6"
+          >
+            <div className="absolute top-8 left-8 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full border border-primary/20 flex items-center justify-center bg-primary/5">
+                <Timer className="text-primary animate-pulse" size={20} />
+              </div>
+              <div>
+                <div className="text-[10px] font-sans font-bold uppercase tracking-widest text-primary/60">Transition Lock</div>
+                <div className="text-2xl font-display text-primary">{timeLeft}s</div>
+              </div>
+            </div>
+
+            <div className="absolute top-8 right-8 flex items-center gap-4 text-right">
+              <div>
+                <div className="text-[10px] font-sans font-bold uppercase tracking-widest text-primary/60">Voice Link</div>
+                <div className="text-sm font-sans font-bold text-foreground">
+                  {isListening ? "LISTENING..." : "RECONNECTING..."}
+                </div>
+              </div>
+              <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${isListening ? 'border-green-500/40 bg-green-500/5' : 'border-destructive/40 bg-destructive/5'}`}>
+                {isListening ? <Mic className="text-green-500" size={20} /> : <MicOff className="text-destructive" size={20} />}
+              </div>
+            </div>
+
+            <div className="max-w-2xl w-full text-center space-y-8">
+              <div className="space-y-2">
+                <div className="font-sans font-bold text-[10px] uppercase tracking-[0.4em] text-primary">Module C : Colour Perception Matrix</div>
+                <h2 className="text-3xl font-display tracking-tight text-foreground">Ishihara Plate {currentPlateIndex + 1} / {ISHIHARA_SEQUENCE.length}</h2>
+              </div>
+
+              <motion.div 
+                key={currentPlateIndex}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="aspect-square w-full max-w-md mx-auto rounded-full overflow-hidden border-4 border-primary/20 shadow-glow-gold bg-black/40 relative group flex items-center justify-center p-0"
+              >
+                <div className="pdf-plate-container scale-[1.1]">
+                  <Document
+                    file="/assets/ishihara/Ishihara_Tests.pdf"
+                    loading={
+                      <div className="flex flex-col items-center gap-2">
+                        <Activity className="animate-spin text-primary" size={32} />
+                        <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-primary/60">Loading Plate...</span>
+                      </div>
+                    }
+                    error={
+                      <div className="text-destructive font-sans font-bold text-xs">
+                        FILE_ERROR: Unable to render evaluation plate.
+                      </div>
+                    }
+                  >
+                    <Page 
+                      pageNumber={ISHIHARA_SEQUENCE[currentPlateIndex].pageNumber} 
+                      width={400}
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                      className="rounded-full overflow-hidden"
+                    />
+                  </Document>
+                </div>
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-8">
+                  <p className="text-[10px] font-sans font-bold uppercase tracking-widest text-white/60">State visible digit clearly</p>
+                </div>
+              </motion.div>
+
+              <div className="grid grid-cols-6 gap-2 max-w-sm mx-auto">
+                {ISHIHARA_SEQUENCE.map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={`h-1 rounded-full transition-all duration-500 ${i === currentPlateIndex ? 'bg-primary w-full' : i < currentPlateIndex ? 'bg-primary/40' : 'bg-white/10'}`} 
+                  />
+                ))}
+              </div>
+
+              <div className="pt-8">
+                <Button 
+                  variant="outline" 
+                  onClick={() => finishColorTest()}
+                  className="font-sans font-bold text-[10px] uppercase tracking-widest border-primary/20 hover:bg-primary/10"
+                >
+                  Terminate Assessment Early
+                </Button>
+              </div>
+            </div>
+
+            {/* Tactical Scanning Background for Overlay */}
+            <div className="absolute inset-0 pointer-events-none opacity-5 overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-primary animate-[scan_4s_linear_infinite]" />
+              <div className="grid grid-cols-12 h-full w-full">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="border-r border-primary/10 h-full" />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AppShell>
   );
 }

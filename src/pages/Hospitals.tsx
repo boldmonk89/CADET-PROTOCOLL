@@ -7,8 +7,9 @@ import { AppShell } from "@/components/cadet/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { COMMAND_HOSPITALS, distanceKm, getCityCoords, STATE_TO_COMMAND_MAP } from "@/lib/cadet-data";
-import { Navigation, Phone, Copy, MapPin, Target } from "lucide-react";
+import { Navigation, Phone, Copy, MapPin, Target, Hospital } from "lucide-react";
 import { toast } from "sonner";
+import { ReferralSection } from "@/components/cadet/ReferralSection";
 
 export default function Hospitals() {
   const { user, loading } = useAuth();
@@ -149,7 +150,7 @@ export default function Hospitals() {
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {hospitals.map((h, i) => (
             <motion.div
               key={h.name}
@@ -157,11 +158,15 @@ export default function Hospitals() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
+              className="h-full"
             >
               <HospitalCard hospital={h} />
             </motion.div>
           ))}
         </div>
+
+        {/* Global Clinical Referral Instructions */}
+        <ReferralSection />
       </div>
     </AppShell>
   );

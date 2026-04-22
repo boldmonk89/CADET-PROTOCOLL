@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ENTRY_SCHEMES, TARGET_SERVICES, GENDERS, BLOOD_GROUPS, bmi } from "@/lib/cadet-data";
+import { MedicalAuditEngine, ServiceBranch, Gender } from "@/data/medical-standards";
+import { differenceInYears } from "date-fns";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Check, CalendarIcon, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -380,14 +382,73 @@ function Step2({ profile, update }: { profile: Profile; update: (p: Partial<Prof
         </Field>
       </div>
       {calcBmi !== null && (
-        <div className="glass-panel p-4 flex items-center justify-between">
-          <span className="font-mono-tac text-xs uppercase tracking-widest text-muted-foreground">Computed BMI</span>
-          <span className={`font-display text-2xl ${calcBmi < 18.5 || calcBmi > 25 ? "text-warning" : "text-success"}`}>{calcBmi}</span>
+        <div className="space-y-4">
+          <div className="glass-panel p-4 flex items-center justify-between">
+            <span className="font-mono-tac text-xs uppercase tracking-widest text-muted-foreground">Computed BMI</span>
+            <span className={`font-display text-2xl ${calcBmi < 18.5 || calcBmi > 25 ? "text-warning" : "text-success"}`}>{calcBmi}</span>
+          </div>
+          
+          <MilitaryValidation profile={profile} bmi={calcBmi} />
         </div>
       )}
     </div>
   );
 }
+
+function MilitaryValidation({ profile, bmi }: { profile: Profile; bmi: number }) {
+  const age = profile.date_of_birth ? differenceInYears(new Date(), new Date(profile.date_of_birth)) : 20;
+  
+  const h = profile.height_cm || 0;
+  const w = profile.weight_kg || 0;
+  const g = (profile.gender || 'Male') as Gender;
+  const b = (profile.target_service || 'Army_Combat') as ServiceBranch;
+
+  const weightResult = MedicalAuditEngine.evaluateWeight(g, h, w, age);
+  const heightResult = MedicalAuditEngine.evaluateScan(b, g, 'HEIGHT', h);
+
+  return (
+    <div className="p-4 bg-primary/5 border border-primary/20 rounded-sm space-y-3">
+      <div className="text-[10px] font-sans font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+        <Activity size={12} />
+        AFMS Preliminary Assessment
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <div className="text-[9px] text-muted-foreground uppercase">Height Standard</div>
+          <div className="flex items-center gap-2">
+             <StatusIndicator status={heightResult.status} />
+             <span className="text-xs font-sans font-bold">{heightResult.status === 'FIT' ? 'OPTIMAL' : heightResult.reason}</span>
+          </div>
+        </div>
+        
+        <div className="space-y-1">
+          <div className="text-[9px] text-muted-foreground uppercase">Weight Standard</div>
+          <div className="flex items-center gap-2">
+             <StatusIndicator status={weightResult.status} />
+             <span className="text-xs font-sans font-bold">{weightResult.status === 'FIT' ? 'OPTIMAL' : weightResult.reason}</span>
+          </div>
+        </div>
+      </div>
+
+      {(heightResult.status !== 'FIT' || weightResult.status !== 'FIT') && (
+        <div className="pt-2 mt-2 border-t border-primary/10">
+          <p className="text-[9px] text-warning italic">
+            Note: Discrepancies flagged here are based on 2025 Military Standards. Final decision rests with SMB/AMB.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatusIndicator({ status }: { status: string }) {
+  if (status === 'FIT') return <div className="w-2 h-2 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]" />;
+  if (status === 'TR') return <div className="w-2 h-2 rounded-full bg-warning shadow-[0_0_8px_rgba(234,179,8,0.5)]" />;
+  return <div className="w-2 h-2 rounded-full bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.5)]" />;
+}
+
+import { Activity } from "lucide-react";
 
 function Step3({ profile, update }: { profile: Profile; update: (p: Partial<Profile>) => void }) {
   const mh = profile.medical_history || {};

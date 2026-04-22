@@ -8,9 +8,11 @@
  * strictly aligned to the CADET_PROTOCOL_MedicalStandards_Report_2025.
  */
 
+import { MALE_HEIGHT_WEIGHT_TABLE, FEMALE_HEIGHT_WEIGHT_TABLE } from "./military-standards-tables";
+
 export type ServiceBranch = 'Army_Combat' | 'Army_Other' | 'Navy_General' | 'Navy_Pilot' | 'AirForce_Flying' | 'AirForce_Ground';
 export type Gender = 'Male' | 'Female';
-export type FitStatus = 'FIT' | 'UNFIT' | 'BORDERLINE' | 'SCAN_INCOMPLETE' | 'MANUAL_REVIEW';
+export type FitStatus = 'FIT' | 'UNFIT' | 'BORDERLINE' | 'SCAN_INCOMPLETE' | 'MANUAL_REVIEW' | 'TR' | 'PR';
 
 // ----------------------------------------------------------------------------------
 // INTERFACE ARCHITECTURE
@@ -786,36 +788,42 @@ export class MedicalAuditEngine {
     gender: Gender, 
     metricType: 'CARRY_ANGLE' | 'GENU_VALGUM' | 'BMI' | 'VISION', 
     value: number | string
-  ): FitStatus {
+  ): { status: FitStatus; reason?: string } {
     const limits = CADET_MEDICAL_DATABASE[branch][gender];
 
     switch(metricType) {
+      case 'HEIGHT':
+        if (typeof value === 'number') {
+           return value >= limits.anthropometric.minHeightCm ? { status: 'FIT' } : { status: 'PR', reason: `Height below ${limits.anthropometric.minHeightCm}cm` };
+        }
+        break;
+
       case 'CARRY_ANGLE':
         if (typeof value === 'number') {
-          return value <= limits.orthopaedic.carryAngle.maxDegrees ? 'FIT' : 'UNFIT';
+          return value <= limits.orthopaedic.carryAngle.maxDegrees ? { status: 'FIT' } : { status: 'PR', reason: `Carry Angle > ${limits.orthopaedic.carryAngle.maxDegrees}°` };
         }
         break;
         
       case 'GENU_VALGUM':
         if (typeof value === 'number') {
-          return value <= limits.orthopaedic.genuValgum.maxInterMalleolarDistanceCm ? 'FIT' : 'UNFIT';
+           const max = limits.orthopaedic.genuValgum.maxInterMalleolarDistanceCm;
+           return value <= max ? { status: 'FIT' } : { status: 'PR', reason: `IMD > ${max}cm (Knock Knee)` };
         }
         break;
 
-      case 'BMI':
-        if (typeof value === 'number') {
-          if (value < limits.anthropometric.bmiRangeAllowed.min) return 'UNFIT'; // Underweight
-          if (value <= limits.anthropometric.bmiRangeAllowed.max) return 'FIT';
-          // Calculate overweight tolerance
-          const maxWithTolerance = limits.anthropometric.bmiRangeAllowed.max * (1 + (limits.anthropometric.bmiCalculationMethod === 'HeightWeightTable' ? limits.anthropometric.overweightTolerancePercentage / 100 : 0));
-          if (value <= maxWithTolerance) return 'BORDERLINE';
-          return 'UNFIT';
-        }
-        break;
+        case 'BMI':
+          if (typeof value === 'number') {
+            if (value <= limits.anthropometric.bmiRangeAllowed.max) return { status: 'FIT' };
+            // Calculate overweight tolerance
+            const maxWithTolerance = limits.anthropometric.bmiRangeAllowed.max * (1 + (limits.anthropometric.bmiCalculationMethod === 'HeightWeightTable' ? limits.anthropometric.overweightTolerancePercentage / 100 : 0));
+            if (value <= maxWithTolerance) return { status: 'BORDERLINE', reason: 'Marginally Overweight' };
+            return { status: 'UNFIT', reason: 'BMI exceeds military standards' };
+          }
+          break;
         
       // Future expansion for vision acuity strings
     }
     
-    return 'SCAN_INCOMPLETE';
+    return { status: 'SCAN_INCOMPLETE' };
   }
 }
