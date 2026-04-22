@@ -191,6 +191,19 @@ export const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   shillong: { lat: 25.5788, lng: 91.8831 },
   nagpur: { lat: 21.1458, lng: 79.0882 },
   kanpur: { lat: 26.4499, lng: 80.3319 },
+  gurugram: { lat: 28.4595, lng: 77.0266 },
+  faridabad: { lat: 28.4089, lng: 77.3178 },
+  surat: { lat: 21.1702, lng: 72.8311 },
+  vadodara: { lat: 22.3072, lng: 73.1812 },
+  amritsar: { lat: 31.6340, lng: 74.8723 },
+  ludhiana: { lat: 30.9010, lng: 75.8573 },
+  varanasi: { lat: 25.3176, lng: 82.9739 },
+  agra: { lat: 27.1767, lng: 78.0081 },
+  mysore: { lat: 12.2958, lng: 76.6394 },
+  nashik: { lat: 19.9975, lng: 73.7898 },
+  gaya: { lat: 24.7914, lng: 85.0002 },
+  udaipur: { lat: 24.5854, lng: 73.7125 },
+  gwalior: { lat: 26.2124, lng: 78.1772 },
 };
 
 export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {

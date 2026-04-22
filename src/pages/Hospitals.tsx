@@ -129,7 +129,7 @@ export default function Hospitals() {
         >
           <div className="flex-1 w-full space-y-2">
             <label className="font-sans font-bold text-[10px] uppercase tracking-widest text-primary/70">
-              Active Search Anchor {!coords && candidateCity && <span className="text-warning ml-2">(manual location mode)</span>}
+              Active Search Anchor {!coords && candidateCity && <span className="text-warning ml-2">(City not found, showing default order)</span>}
             </label>
             <Input
               value={candidateCity}
