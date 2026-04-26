@@ -10,29 +10,7 @@ export default function Landing() {
   const { scrollYProgress } = useScroll();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden selection:bg-primary/30">
-      {/* Premium Background Effects */}
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
-      
-      {/* Static Background Symbol */}
-      <div 
-        className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"
-      >
-        <motion.div className="relative flex items-center justify-center bg-black/80 rounded-full p-20 blur-3xl scale-125">
-          <motion.img 
-             src="/assets/caduceus_solo.png"
-             alt=""
-             className="w-[85%] max-w-[900px] h-auto object-contain drop-shadow-[0_0_80px_rgba(180,150,60,0.2)] mix-blend-screen brightness-110"
-             style={{ translateZ: 0 }}
-          />
-          {/* Subtle Glow Ring */}
-          <motion.div 
-            className="absolute w-[90vw] h-[90vw] max-w-[1100px] max-h-[1100px] rounded-full bg-primary/5 blur-[120px] -z-10"
-          />
-        </motion.div>
-      </div>
-
-      <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/5 to-transparent blur-3xl pointer-events-none"></div>
+    <div className="min-h-screen flex flex-col bg-black relative overflow-hidden selection:bg-primary/30 text-white">
       
       <header className="container py-8 flex items-center justify-between relative z-10 border-b border-border/30">
         <Logo size="md" />
@@ -91,7 +69,7 @@ export default function Landing() {
 
       </section>
 
-      <footer className="container py-8 border-t border-border/20 text-center text-[9px] font-sans font-bold uppercase tracking-[0.4em] text-muted-foreground/40 relative z-10 bg-background/80">
+      <footer className="container py-8 border-t border-border/20 text-center text-[9px] font-sans font-bold uppercase tracking-[0.4em] text-muted-foreground/40 relative z-10 bg-black">
         CADET PROTOCOL 2025–2028 | SECURE ENVIRONMENT
       </footer>
     </div>
